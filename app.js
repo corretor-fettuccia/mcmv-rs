@@ -84,9 +84,8 @@
     }
     function initPortal(payload){
       portalConfig=payload.config;items=payload.items||[];
-      document.title=portalConfig.titulo+' · Empreendimentos';
-      document.querySelector('.hero h1').textContent=portalConfig.titulo;
-      document.querySelector('.hero p').textContent=portalConfig.subtitulo;
+      // Preserva o titulo SEO e o hero institucional definidos no HTML.
+      // Os dados do Motor A alimentam o catalogo e os filtros.
       // Identidade institucional fixa; título do catálogo exibido no hero.
       document.querySelector('.footnote').textContent=portalConfig.simuladorAtivo?'Portal para você conquistar o sonho da casa própria.':'Portal imobiliário. Informações de empreendimentos.';
       if(!portalConfig.simuladorAtivo){
@@ -141,9 +140,12 @@
         if(!payload || !payload.ok || !payload.config || !Array.isArray(payload.items)){
           exibirFalha((payload && payload.error) || 'Resposta inesperada do Motor A.');return;
         }
-        initPortal(payload);
+        try { initPortal(payload); } catch(err) {
+          console.error('[Vitrine] Falha ao processar dados do Motor A:', err);
+          exibirFalha('A API respondeu, mas ocorreu um erro ao processar o catálogo. Consulte o console do navegador.');
+        }
       };
-      script.onerror=()=>{if(concluir())exibirFalha('Não foi possível conectar à API pública. Verifique a implantação e as permissões.');};
+      script.onerror=()=>{if(concluir())exibirFalha('Não foi possível carregar a API pública. Verifique a implantação, o acesso e a resposta JSONP do Motor A.');};
       timer=setTimeout(()=>{if(concluir())exibirFalha('A consulta demorou demais. Verifique a conexão ou a URL /exec.');},18000);
       const separator=url.includes('?')?'&':'?';
       script.src=url+separator+'callback='+encodeURIComponent(callback);

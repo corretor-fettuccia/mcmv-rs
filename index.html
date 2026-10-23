@@ -3,7 +3,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8"/>
-<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" name="viewport"/>
 <title>Minha Casa Minha Vida RS | Apartamentos e Empreendimentos</title>
 <meta name="description" content="Encontre apartamentos e empreendimentos Minha Casa Minha Vida no Rio Grande do Sul. Pesquise por cidade, bairro e conheça opções de financiamento.">
 <style>
@@ -137,6 +137,77 @@ html{scroll-padding-top:92px}body{font-family:system-ui,-apple-system,"Segoe UI"
 <script type="application/ld+json">
 {"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://mcmv-rs.com.br/#website","url":"https://mcmv-rs.com.br/","name":"Minha Casa Minha Vida RS","inLanguage":"pt-BR","description":"PORTAL Minha Casa Minha Vida - RS para busca de empreendimentos no Rio Grande do Sul."},{"@type":"WebPage","@id":"https://mcmv-rs.com.br/#webpage","url":"https://mcmv-rs.com.br/","name":"Minha Casa Minha Vida RS | Apartamentos e Empreendimentos","isPartOf":{"@id":"https://mcmv-rs.com.br/#website"},"inLanguage":"pt-BR","about":{"@type":"Thing","name":"Minha Casa Minha Vida"}}]}
 </script>
+
+<style id="mobile-responsive-refinement">
+/* Exclusivamente mobile/tablet: preservar a composição desktop aprovada. */
+@media (max-width:850px){
+  html,body{width:100%;max-width:100%;overflow-x:clip;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+  .siteHeader,.wrap,.hero,.simBox,.filters,.tiles,.about,.siteFooter{min-width:0;max-width:100%}
+  img,svg,video,iframe{max-width:100%}
+  .siteHeader{box-sizing:border-box;flex-wrap:wrap;row-gap:14px}
+  .siteHeader .brand{min-width:0;white-space:normal}
+  .siteHeader nav{min-width:0;flex-wrap:wrap;justify-content:flex-start}
+  .siteHeader nav a{line-height:1.4;min-height:40px;display:inline-flex;align-items:center}
+  .heroContent{min-width:0}
+  .hero h1{overflow-wrap:normal}
+  .simBox,.filters{min-width:0}
+  .simGrid,.filtergrid,.tiles{min-width:0}
+  .simActions{display:flex;flex-wrap:wrap;gap:10px}
+  .simActions button{min-height:44px;white-space:normal;line-height:1.35}
+  .cardbody,.cardbody>*{min-width:0}
+  .cardbody h3,.location,.about p,.footnote{overflow-wrap:anywhere}
+  .divider{min-width:0;flex-wrap:wrap;row-gap:12px}
+  .siteFooter{flex-wrap:wrap}
+}
+@media (max-width:600px){
+  .siteHeader{padding:15px 16px;gap:12px}
+  .siteHeader .brand{font-size:clamp(22px,6vw,27px);line-height:1.1}
+  .siteHeader .brand small{font-size:9px;letter-spacing:.7px;line-height:1.35}
+  .siteHeader nav{width:100%;gap:6px 15px;justify-content:flex-start}
+  .siteHeader nav a{font-size:12px;padding:4px 0}
+  .wrap{padding:16px 14px 38px}
+  .hero{border-radius:12px;margin-bottom:16px;min-height:480px!important;padding:28px 22px 30px!important;background-position:59% center!important}
+  .hero::before{background:linear-gradient(180deg,rgba(5,37,95,.91) 0%,rgba(5,37,95,.70) 44%,rgba(5,37,95,.12) 100%)}
+  .hero .eyebrow{font-size:10px;letter-spacing:1.2px;line-height:1.5}
+  .hero h1{font-size:clamp(32px,9.1vw,45px);line-height:1.08;letter-spacing:-1.35px;margin:14px 0 12px}
+  .hero p{font-size:clamp(13px,3.65vw,15px);line-height:1.55;margin:0;max-width:32ch}
+  .heroLink{font-size:13px;padding:12px 18px;min-height:46px;margin-top:16px;margin-bottom:0;gap:12px}
+  .simBox,.filters{padding:19px 16px;margin-bottom:16px;border-radius:11px}
+  .simBox h2,.filters h2{font-size:clamp(20px,5.6vw,24px);line-height:1.25;letter-spacing:-.4px}
+  .simBox>p,.filters p{font-size:14px;line-height:1.55}
+  .simActions{gap:9px;margin-top:13px}
+  .simActions button{flex:1 1 100%;padding:12px 14px}
+  .simGrid{display:grid!important;grid-template-columns:minmax(0,1fr)!important}
+  .filtergrid{display:grid;grid-template-columns:minmax(0,1fr)!important;gap:12px}
+  .filtergrid>div{grid-column:auto!important;grid-row:auto!important;min-width:0}
+  label,.filters label{font-size:13px;line-height:1.4;margin-bottom:7px}
+  input:not([type=checkbox]),select,textarea{font-size:16px;min-height:46px;max-width:100%}
+  .filtertail{gap:12px;margin-top:15px;padding-top:14px}
+  .listingheader{margin:26px 0 14px;gap:9px}
+  .listingheader h2{font-size:clamp(21px,5.8vw,26px);line-height:1.2}
+  .tiles{grid-template-columns:minmax(0,1fr);gap:14px}
+  .cardmedia{height:clamp(185px,55vw,235px)}
+  .cardbody{padding:17px}
+  .cardbody h3{font-size:19px;line-height:1.28}
+  .cardbody .detail{font-size:13px;line-height:1.55;min-height:0;margin:9px 0 13px}
+  .divider{gap:12px;align-items:center}
+  .cardbtn{min-height:44px;padding:11px 15px}
+  .about{margin-top:30px;padding:24px 0 16px;gap:8px}
+  .about h2{font-size:clamp(21px,6vw,25px);line-height:1.25}
+  .about p{font-size:14px;line-height:1.65}
+  .siteFooter{padding:20px 0;gap:12px}
+  .siteFooter .footnote{font-size:12px;line-height:1.6}
+}
+@media (max-width:360px){
+  .wrap{padding-left:12px;padding-right:12px}
+  .hero{padding:25px 17px 26px!important;min-height:455px!important}
+  .hero h1{font-size:32px;letter-spacing:-1px}
+  .hero p{font-size:13px}
+  .simBox,.filters{padding:17px 13px}
+  .siteHeader nav{gap:4px 12px}
+  .siteHeader nav a{font-size:11px}
+}
+</style>
 </head>
 <body>
 <header class="siteHeader"><a href="#portal" class="brand" aria-label="Página inicial do portal">MCMV<span>RS</span><small>PORTAL Minha Casa Minha Vida - RS</small></a><nav aria-label="Navegação principal"><a href="#busca">Buscar imóveis</a><a href="#empreendimentos">Empreendimentos</a><a href="#sobre">Sobre o portal</a></nav></header>
@@ -154,7 +225,7 @@ html{scroll-padding-top:92px}body{font-family:system-ui,-apple-system,"Segoe UI"
 </section>
 <div class="listingheader" id="empreendimentos"><div><div class="eyebrow">NOSSA VITRINE</div><h2>Empreendimentos disponíveis</h2></div></div>
 <div aria-live="off" class="tiles" id="tiles"></div>
-<section class="about" id="sobre"><div><span class="eyebrow">Sobre o portal</span><h2>Informação para escolher com mais segurança.</h2></div><p>Seu primeiro imóvel está esperando, imóveis enquadrados dentro das diretrizes do programa Minha Casa Minha Vida</p></section><footer class="siteFooter"><div><strong>MCMV<span>RS</span></strong><p class="footnote">PORTAL Minha Casa Minha Vida - RS, sem vínculo institucional com a Caixa ou órgãos governamentais. Resultados financeiros são apenas estimativas.</p></div><a href="#portal">Voltar ao início ↑</a></footer>
+<section class="about" id="sobre"><div><span class="eyebrow">Sobre o portal</span><h2>Informação para escolher com mais segurança.</h2></div><p>Uma vitrine imobiliária independente para facilitar a descoberta de empreendimentos, reunir informações relevantes e ajudar você a comparar possibilidades em diferentes regiões.</p></section><footer class="siteFooter"><div><strong>MCMV<span>RS</span></strong><p class="footnote">PORTAL Minha Casa Minha Vida - RS, sem vínculo institucional com a Caixa ou órgãos governamentais. Resultados financeiros são apenas estimativas.</p></div><a href="#portal">Voltar ao início ↑</a></footer>
 </main>
 <script src="config.js"></script><script src="app.js"></script></body>
 </html>
