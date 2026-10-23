@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://mcmv-rs.com.br/sitemap.xml
