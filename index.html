@@ -208,6 +208,100 @@ html{scroll-padding-top:92px}body{font-family:system-ui,-apple-system,"Segoe UI"
   .siteHeader nav a{font-size:11px}
 }
 </style>
+<style id="mobile-compact-v2">
+/* ==========================================================================
+   MOBILE COMPACTO (somente <=600px). Desktop/tablet NÃO são afetados.
+   Meta: ~1/3 dos espaços anteriores e lista de imóveis em cartões horizontais
+   (miniatura à esquerda + dados à direita), mostrando 3-4 opções por tela.
+   Não altera app.js, config.js nem o motor Apps Script.
+   ========================================================================== */
+@media (max-width:600px){
+  html{scroll-padding-top:8px}
+  body{font-size:14px}
+
+  /* Cabeçalho: 2 linhas curtas (marca + links) */
+  .siteHeader{min-height:0;padding:8px 12px;gap:2px 12px;row-gap:2px}
+  .siteHeader .brand{font-size:20px;letter-spacing:-1px;line-height:1}
+  .siteHeader .brand small{font-size:8px;letter-spacing:.5px;margin-top:2px;line-height:1.2}
+  .siteHeader nav{gap:2px 14px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+  .siteHeader nav::-webkit-scrollbar{display:none}
+  .siteHeader nav a{font-size:12px;min-height:30px;padding:0;white-space:nowrap}
+
+  .wrap{padding:8px 10px 24px}
+
+  /* Hero: mesma imagem e texto, bem mais baixo */
+  .hero{min-height:230px!important;padding:16px 16px 18px!important;margin-bottom:8px;border-radius:10px;align-items:flex-end!important}
+  .hero::before{background:linear-gradient(180deg,rgba(5,37,95,.82) 0%,rgba(5,37,95,.62) 55%,rgba(5,37,95,.35) 100%)}
+  .hero .eyebrow{font-size:9px;letter-spacing:.9px}
+  .hero h1{font-size:clamp(26px,8vw,32px);letter-spacing:-1px;line-height:1.05;margin:6px 0 6px}
+  .hero p{font-size:12.5px;line-height:1.4;max-width:36ch}
+  .heroLink{font-size:12px;padding:8px 14px;min-height:36px;margin-top:10px;gap:10px}
+
+  /* Caixa "Como deseja pesquisar?" */
+  .simBox,.filters{padding:12px;margin-bottom:8px;border-radius:10px}
+  .simBox .eyebrow{font-size:9px;letter-spacing:.9px}
+  .simBox h2{font-size:17px;margin:2px 0 3px}
+  .simBox>p,#placePanel p{font-size:12.5px;line-height:1.4;margin:0 0 8px}
+  .simActions{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+  .simActions button{flex:none;min-height:38px;padding:7px 8px;font-size:12px;line-height:1.25}
+  #focusPlace{width:100%;min-height:38px;padding:7px 10px;font-size:12px}
+  #incomePanel .simGrid{grid-template-columns:minmax(0,1fr)!important;margin:8px 0 6px;gap:0}
+  .simGrid label{margin:0 0 3px;font-size:12px}
+  .simResult{margin-top:8px;padding:9px 10px;font-size:12.5px;line-height:1.45;border-radius:9px}
+
+  /* Filtros: grade 2 colunas, busca ocupa a linha toda */
+  #filterTitle{margin-bottom:6px!important;font-size:10px;letter-spacing:.6px}
+  .filters .filtergrid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px 8px}
+  .filters .filtergrid>div{min-width:0}
+  .filters .filtergrid>div:nth-child(2){grid-column:1/-1!important;order:-1}
+  .filters label{font-size:11px;margin:0 0 2px;line-height:1.3}
+  .filters input,.filters select,input:not([type=checkbox]),select{min-height:38px;height:38px;padding:6px 10px;border-radius:7px}
+  .searchwrap input{padding-left:34px}
+  .searchwrap svg{left:10px;width:16px;height:16px}
+  .filtertail{display:flex;flex-wrap:nowrap;justify-content:space-between;align-items:center;gap:8px;margin-top:8px;padding-top:8px}
+  .filtertail p{font-size:12px;line-height:1.3}
+  .filtertail .secondary{padding:6px 10px;min-height:34px;font-size:12px;white-space:nowrap}
+
+  /* Cabeçalho da lista */
+  .listingheader{margin:12px 0 6px}
+  .listingheader .eyebrow{display:none}
+  .listingheader h2{font-size:18px;line-height:1.2;margin:0}
+
+  /* Lista: cartões horizontais compactos */
+  .tiles{gap:8px;margin-top:0}
+  .tiles .card{display:grid;grid-template-columns:104px minmax(0,1fr);border-radius:9px;transition:none}
+  .tiles .card:hover{transform:none;box-shadow:none}
+  .tiles .card .cardmedia{height:auto;min-height:96px}
+  .tiles .card .badge{top:5px;left:5px;padding:2px 6px;font-size:9px;line-height:1.25;border-radius:4px;max-width:calc(100% - 10px);box-shadow:none}
+  .tiles .card .campaignPin{top:auto;right:0;bottom:0;left:0;max-width:none;border-radius:0;padding:3px 5px;font-size:9px;line-height:1.2;text-align:center}
+  .tiles .card .cardbody{padding:8px 10px 8px}
+  .tiles .card h3{font-size:15px;letter-spacing:-.3px;line-height:1.2;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+  .tiles .card .location{font-size:11px;margin-top:3px;gap:3px;line-height:1.25}
+  .tiles .card .location svg{width:12px;height:12px}
+  .tiles .card .campaignBanner{margin:4px 0 0;padding:3px 8px;font-size:11px;line-height:1.3;border-radius:6px}
+  .tiles .card .detail{font-size:12px;line-height:1.35;margin:4px 0 6px;min-height:0;-webkit-line-clamp:2}
+  .tiles .card .divider{flex-wrap:nowrap;gap:8px;padding-top:6px;margin-top:auto;border-top:1px solid var(--line)}
+  .tiles .card .price{font-size:14px;line-height:1.2;min-width:0;flex:1}
+  .tiles .card .price small{font-size:8px;margin-bottom:1px;letter-spacing:.3px}
+  .tiles .card .cardbtn{min-height:34px;padding:6px 10px;font-size:12px;flex:none}
+  .empty{padding:18px 12px;font-size:13px}.loader{padding:18px}
+
+  /* Rodapé / sobre */
+  .about{margin-top:16px;padding:14px 0 8px;gap:4px}
+  .about h2{font-size:18px;margin:6px 0 0}
+  .about p{font-size:13px;line-height:1.5;margin:0}
+  .siteFooter{padding:12px 0;gap:8px}
+  .siteFooter strong{font-size:18px}
+  .siteFooter .footnote{margin-top:4px;font-size:11px;line-height:1.45}
+}
+@media (max-width:360px){
+  .wrap{padding-left:8px;padding-right:8px}
+  .tiles .card{grid-template-columns:88px minmax(0,1fr)}
+  .tiles .card h3{font-size:14px}
+  .tiles .card .price{font-size:13px}
+  .hero h1{font-size:26px}
+}
+</style>
 </head>
 <body>
 <header class="siteHeader"><a href="#portal" class="brand" aria-label="Página inicial do portal">MCMV<span>RS</span><small>PORTAL Minha Casa Minha Vida - RS</small></a><nav aria-label="Navegação principal"><a href="#busca">Buscar imóveis</a><a href="#empreendimentos">Empreendimentos</a><a href="#sobre">Sobre o portal</a></nav></header>
