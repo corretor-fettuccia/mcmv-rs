@@ -1,4 +1,3 @@
-
 name: Atualizar sitemap MCMV-RS
 
 on:
@@ -15,31 +14,29 @@ concurrency:
 
 jobs:
   gerar-sitemap:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
-
     steps:
-      - name: Baixar repositorio
+      - name: Baixar repositório
         uses: actions/checkout@v4
-
+        with:
+          persist-credentials: true
       - name: Configurar Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-
-      - name: Gerar sitemap
-        run: python scripts/generate_sitemap.py
-
-      - name: Publicar sitemap atualizado
+      - name: Consultar API e gerar sitemap
+        run: python -u scripts/generate_sitemap.py
+      - name: Conferir arquivo XML
+        run: python -c "import xml.etree.ElementTree as ET; print('XML valido:', len(ET.parse('sitemap.xml').findall('{http://www.sitemaps.org/schemas/sitemap/0.9}url')), 'URLs')"
+      - name: Publicar sitemap se alterado
         run: |
           if git diff --quiet -- sitemap.xml; then
-            echo "Sitemap sem alteracoes."
+            echo 'Sitemap sem alterações.'
             exit 0
           fi
-
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add sitemap.xml
-          git commit -m "Atualizar sitemap automaticamente"
+          git commit -m 'chore(seo): atualizar sitemap automaticamente'
           git push
