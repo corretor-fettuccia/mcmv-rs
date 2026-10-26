@@ -17,26 +17,40 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
-      - name: Baixar repositório
+      - name: Baixar repositorio
         uses: actions/checkout@v4
         with:
           persist-credentials: true
+
       - name: Configurar Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.12'
+
       - name: Consultar API e gerar sitemap
         run: python -u scripts/generate_sitemap.py
-      - name: Conferir arquivo XML
-        run: python -c "import xml.etree.ElementTree as ET; print('XML valido:', len(ET.parse('sitemap.xml').findall('{http://www.sitemaps.org/schemas/sitemap/0.9}url')), 'URLs')"
-      - name: Publicar sitemap se alterado
+
+      - name: Validar sitemap
+        run: |
+          python - <<'PY'
+          import xml.etree.ElementTree as ET
+          ns = '{http://www.sitemaps.org/schemas/sitemap/0.9}'
+          root = ET.parse('sitemap.xml').getroot()
+          urls = [el.text for el in root.findall(f'{ns}url/{ns}loc')]
+          assert len(urls) >= 2, f'Esperava portal e ao menos 1 landing page, recebi {len(urls)}'
+          print('Sitemap XML válido com', len(urls), 'URLs')
+          for url in urls:
+              print(' -', url)
+          PY
+
+      - name: Commitar e publicar apenas sitemap.xml
         run: |
           if git diff --quiet -- sitemap.xml; then
-            echo 'Sitemap sem alterações.'
+            echo 'Sem alteracoes no sitemap.xml.'
             exit 0
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add sitemap.xml
-          git commit -m 'chore(seo): atualizar sitemap automaticamente'
-          git push
+          git commit -m 'chore: atualizar sitemap.xml via API'
+          git push origin HEAD:${{ github.event.repository.default_branch }}
