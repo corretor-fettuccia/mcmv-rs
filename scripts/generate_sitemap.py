@@ -1,142 +1,112 @@
 #!/usr/bin/env python3
-"""Gera sitemap da vitrine a partir do JSONP publico do Google Apps Script.
-Execute na raiz do repositorio: python scripts/generate_sitemap.py
+"""Gera sitemap.xml usando diretamente a API JSON pública da vitrine MCMV-RS.
+
+Contrato esperado: {"ok": true, "items": [{"name": "...", "url": "https://..."}, ...]}
+Não altera o arquivo se ocorrer erro de API ou nenhuma URL for encontrada.
 """
 import json
 import os
 import re
-import secrets
 import sys
-import time
 from pathlib import Path
 from urllib.error import HTTPError, URLError
-from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
+from urllib.parse import urlsplit, urlunsplit
 from urllib.request import Request, urlopen
-from xml.etree import ElementTree as ET
+import xml.etree.ElementTree as ET
 
-ROOT = Path(__file__).resolve().parents[1]
-HOME = 'https://mcmv-rs.com.br/'
-OUTPUT = ROOT / 'sitemap.xml'
-CONFIG = ROOT / 'config.js'
+ROOT = Path(__file__).resolve().parent.parent
+SITE = 'https://mcmv-rs.com.br/'
+API_FALLBACK = 'https://script.google.com/macros/s/AKfycbxYTaWNG6o_5NqPq3D16_isTpmTPWgYa3NureFuHz21fG-x-rDfqM1RMXxWog_5sHxxSQ/exec'
 NS = 'http://www.sitemaps.org/schemas/sitemap/0.9'
 ET.register_namespace('', NS)
-CALLBACK = '__portalVitrine_' + str(int(time.time() * 1000)) + '_' + str(secrets.randbelow(100000))
 
 
-def get_api_url():
-    configured = os.getenv('VITRINE_API_URL', '').strip()
-    if not configured:
-        if not CONFIG.is_file():
-            raise RuntimeError('config.js nao encontrado na raiz.')
-        config = CONFIG.read_text(encoding='utf-8')
-        match = re.search(r'window\s*\.\s*VITRINE_API_URL\s*=\s*[\'\"]([^\'\"]+)', config)
-        if not match:
-            raise RuntimeError('Nao encontrei window.VITRINE_API_URL em config.js')
-        configured = match.group(1)
-    uri = urlsplit(configured)
-    if uri.scheme != 'https' or uri.hostname != 'script.google.com' or not re.fullmatch(r'/macros/s/[^/]+/exec', uri.path):
-        raise RuntimeError('URL da API nao e endpoint Apps Script HTTPS /exec')
-    query = [(k, v) for k, v in parse_qsl(uri.query) if k.lower() != 'callback']
-    query.append(('callback', CALLBACK))
-    return urlunsplit((uri.scheme, uri.netloc, uri.path, urlencode(query), ''))
+def api_url():
+    override = os.getenv('VITRINE_API_URL', '').strip()
+    if override:
+        return override
+    path = ROOT / 'config.js'
+    if path.exists():
+        match = re.search(r'window\s*\.\s*VITRINE_API_URL\s*=\s*[\'\"]([^\'\"]+)', path.read_text(encoding='utf-8'))
+        if match:
+            return match.group(1)
+    return API_FALLBACK
 
 
-def unpack(body):
-    text = body.strip().lstrip('\ufeff').strip()
-    if text.startswith(")]}'"):
-        text = text.partition('\n')[2].strip()
-    if text.lower().startswith(('<html', '<!doctype html')):
-        raise RuntimeError('Apps Script retornou HTML/login, em vez do catalogo')
-    matcher = re.fullmatch(r'\s*' + re.escape(CALLBACK) + r'\s*\(\s*(.*?)\s*\)\s*;?\s*', text, re.S)
-    if matcher:
-        text = matcher.group(1)
-    try:
-        data = json.loads(text)
-    except json.JSONDecodeError as exc:
-        raise RuntimeError('Resposta inesperada da API. Inicio: ' + repr(text[:160])) from exc
-    if not isinstance(data, dict):
-        raise RuntimeError('API retornou JSON que nao e objeto')
-    if data.get('ok') is not True:
-        raise RuntimeError('API retornou erro: ' + str(data.get('error') or data.get('message') or 'ok != true'))
-    items = data.get('items')
-    if not isinstance(items, list):
-        raise RuntimeError('API nao entregou items como lista. Campos: ' + ', '.join(data))
+def load_items():
+    fixture = os.getenv('SITEMAP_FIXTURE', '').strip()  # para teste local sem rede
+    if fixture:
+        payload = json.loads(Path(fixture).read_text(encoding='utf-8'))
+    else:
+        url = api_url()
+        print('Consultando API JSON:', url, flush=True)
+        req = Request(url, headers={'Accept': 'application/json', 'User-Agent': 'MCMV-RS-Sitemap/1.0'})
+        try:
+            with urlopen(req, timeout=40) as response:
+                raw = response.read(5_000_001)
+                print('HTTP:', response.status, '| Content-Type:', response.headers.get('Content-Type'), flush=True)
+        except (HTTPError, URLError) as exc:
+            raise RuntimeError(f'Falha ao consultar API: {exc}') from exc
+        if len(raw) > 5_000_000:
+            raise RuntimeError('Resposta excede 5 MB')
+        try:
+            payload = json.loads(raw.decode('utf-8-sig'))
+        except (ValueError, UnicodeDecodeError) as exc:
+            raise RuntimeError('A resposta da API não é JSON válido') from exc
+    if not isinstance(payload, dict) or payload.get('ok') is not True:
+        raise RuntimeError(f'API não retornou ok:true. Resposta: {str(payload)[:250]}')
+    items = payload.get('items')
+    if not isinstance(items, list) or not items:
+        raise RuntimeError('items[] não existe ou veio vazio; sitemap antigo preservado')
+    print('Imóveis recebidos:', len(items), flush=True)
     return items
 
 
-def fetch():
-    fixture = os.getenv('SITEMAP_FIXTURE')
-    if fixture:
-        print('TESTE: usando arquivo local', flush=True)
-        return unpack(Path(fixture).read_text(encoding='utf-8'))
-    url = get_api_url()
-    print('Consultando Apps Script:', urlsplit(url).netloc + urlsplit(url).path, flush=True)
-    print('Callback:', CALLBACK, flush=True)
-    req = Request(url, headers={'Accept': '*/*', 'User-Agent': 'Mozilla/5.0 (compatible; MCMV-RS-Sitemap/2.0)'})
-    try:
-        with urlopen(req, timeout=45) as response:
-            body = response.read(5_000_001)
-            print('HTTP:', response.status, '| tipo:', response.headers.get('Content-Type', '?'), flush=True)
-    except HTTPError as exc:
-        raise RuntimeError('API HTTP ' + str(exc.code)) from exc
-    except URLError as exc:
-        raise RuntimeError('Falha de conexao com API: ' + str(exc.reason)) from exc
-    if len(body) > 5_000_000:
-        raise RuntimeError('API devolveu mais de 5 MB')
-    return unpack(body.decode('utf-8-sig', errors='replace'))
-
-
-def normalize_url(value):
-    if not isinstance(value, str) or not value.strip() or any(c.isspace() for c in value):
+def valid_url(value):
+    if not isinstance(value, str) or not value.strip():
+        return None
+    value = value.strip()
+    if any(char.isspace() for char in value):
         return None
     try:
-        u = urlsplit(value.strip())
-        if u.scheme not in ('https', 'http') or not u.hostname or u.username or u.password:
+        parts = urlsplit(value)
+        if parts.scheme != 'https' or not parts.hostname or parts.username or parts.password or parts.port not in (None, 443):
             return None
-        if u.port not in (None, 80, 443):
-            return None
-        pairs = [(k, v) for k, v in parse_qsl(u.query, keep_blank_values=True) if not k.lower().startswith('utm_') and k.lower() not in ('gclid', 'fbclid')]
-        return urlunsplit((u.scheme, u.netloc.lower(), u.path or '/', urlencode(pairs), ''))
     except ValueError:
         return None
-
-
-def make_xml(items):
-    print('Itens recebidos da API:', len(items), flush=True)
-    if not items:
-        raise RuntimeError('items vazio; sitemap preservado')
-    urls = {HOME}
-    invalid = []
-    for i, item in enumerate(items, 1):
-        if not isinstance(item, dict):
-            invalid.append(f'#{i} objeto invalido')
-            continue
-        if item.get('indexar') is False or item.get('index') is False or item.get('noindex') is True:
-            continue
-        url = normalize_url(item.get('url') or item.get('canonicalUrl') or item.get('landingPageUrl'))
-        if url:
-            urls.add(url)
-            print(f'  [{i}] {item.get("name", "Empreendimento")} -> {url}', flush=True)
-        else:
-            invalid.append(f'#{i} {item.get("name", "sem nome")}: URL ausente/invalida; campos={list(item.keys())[:14]}')
-    for message in invalid[:15]:
-        print('IGNORADO:', message, flush=True)
-    if len(urls) <= 1:
-        raise RuntimeError('Nenhuma landing page valida na resposta; sitemap anterior preservado')
-    root = ET.Element(f'{{{NS}}}urlset')
-    for url in [HOME] + sorted(urls - {HOME}):
-        ET.SubElement(ET.SubElement(root, f'{{{NS}}}url'), f'{{{NS}}}loc').text = url
-    ET.indent(root, space='  ')
-    return '<?xml version="1.0" encoding="UTF-8"?>\n' + ET.tostring(root, encoding='unicode') + '\n', len(urls)
+    return urlunsplit((parts.scheme, parts.netloc.lower(), parts.path or '/', parts.query, ''))
 
 
 def main():
-    xml, count = make_xml(fetch())
-    if OUTPUT.exists() and OUTPUT.read_text(encoding='utf-8') == xml:
-        print('Sem alteracoes:', count, 'URLs', flush=True)
-        return
-    OUTPUT.write_text(xml, encoding='utf-8')
-    print('SUCESSO: sitemap.xml atualizado com', count, 'URLs', flush=True)
+    items = load_items()
+    urls = {SITE}
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        if item.get('indexar') is False or item.get('noindex') is True:
+            continue
+        url = valid_url(item.get('url'))
+        if url:
+            urls.add(url)
+            print(' +', item.get('name', '(sem nome)'), '=>', url, flush=True)
+        else:
+            print(' ! URL inválida:', item.get('name', '(sem nome)'), flush=True)
+    if len(urls) == 1:
+        raise RuntimeError('Nenhuma landing page válida recebida; sitemap antigo preservado')
+    root = ET.Element(f'{{{NS}}}urlset')
+    for url in [SITE] + sorted(urls - {SITE}):
+        ET.SubElement(ET.SubElement(root, f'{{{NS}}}url'), f'{{{NS}}}loc').text = url
+    ET.indent(root, space='  ')
+    content = b'<?xml version="1.0" encoding="UTF-8"?>\n' + ET.tostring(root, encoding='utf-8') + b'\n'
+    ET.fromstring(content)
+    target = ROOT / 'sitemap.xml'
+    if target.exists() and target.read_bytes() == content:
+        print('Sem mudanças:', len(urls), 'URLs', flush=True)
+    else:
+        temp = ROOT / 'sitemap.xml.tmp'
+        temp.write_bytes(content)
+        temp.replace(target)
+        print('SUCESSO:', len(urls), 'URLs escritas em sitemap.xml', flush=True)
 
 
 if __name__ == '__main__':
