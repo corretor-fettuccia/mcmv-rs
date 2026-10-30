@@ -3,6 +3,8 @@
 Não altera HTML, app.js ou config.js. Preserva saídas quando API falha.
 """
 import hashlib
+import csv
+import io
 import json
 import os
 import re
@@ -98,13 +100,16 @@ def normalize(payload):
         low, high = price(item.get('minimum')), price(item.get('maximum'))
         if low is not None and high is not None and low > high:
             raise RuntimeError(f'Preços invertidos: {name}')
+        image = valid_url(item.get('image'))
+        if not image:
+            raise RuntimeError(f'Imagem ausente ou URL inválida para: {name}; geração cancelada')
         result.append({
             'id': ident, 'nome': name, 'descricao': clean(item.get('highlight'), 600),
             'cidade': clean(item.get('city'), 90), 'bairro': clean(item.get('neighborhood'), 90),
             'regiao': clean(item.get('region'), 90), 'uf': clean(item.get('uf'), 2),
             'endereco': clean(item.get('address'), 200), 'situacao': clean(item.get('state'), 80),
             'valor_minimo': low, 'valor_maximo': high,
-            'imagem': valid_url(item.get('image')), 'url_empreendimento': url, 'url_busca': SITE
+            'imagem': image, 'url_empreendimento': url, 'url_busca': SITE
         })
     if not result:
         raise RuntimeError('Nenhum empreendimento válido; saídas preservadas')
@@ -131,7 +136,8 @@ def make_catalog(entries):
         'url_principal': SITE, 'url_pesquisa': SITE,
         'filtros': ['regiao', 'cidade', 'bairro', 'nome_do_empreendimento', 'situacao', 'renda_familiar'],
         'aviso': 'Sem vínculo institucional com CAIXA ou Governo Federal. Valores e condições sujeitos a confirmação.',
-        'total_empreendimentos': len(entries), 'empreendimentos': entries
+        'total_empreendimentos': len(entries), 'empreendimentos': entries,
+        'feeds': {'google_ads_imoveis': SITE + 'google-ads-imoveis.csv', 'merchant_formato': SITE + 'merchant-produtos.xml'}
     }
     return (json.dumps(document, ensure_ascii=False, indent=2, allow_nan=False) + '\n').encode('utf-8')
 
@@ -170,6 +176,63 @@ def make_llms(entries):
     return '\n'.join(lines).encode('utf-8')
 
 
+def make_ads_feed(entries):
+    """Feed Property do Google Ads; imagem vem estritamente do campo image da API."""
+    columns = ['Listing ID', 'Listing name', 'Final URL', 'Image URL',
+               'City name', 'Description', 'Price', 'Property type',
+               'Listing type', 'Contextual keywords', 'Address']
+    output = io.StringIO(newline='')
+    writer = csv.DictWriter(output, fieldnames=columns, lineterminator='\n')
+    writer.writeheader()
+    for e in entries:
+        writer.writerow({
+            'Listing ID': e['id'],
+            'Listing name': e['nome'][:25],
+            'Final URL': SITE,  # destino fixo, não uma linha/produto no feed
+            'Image URL': e['imagem'],
+            'City name': e['cidade'][:25],
+            'Description': (e['descricao'] or e['nome'])[:25],
+            'Price': f"{e['valor_minimo']:.2f} BRL" if e['valor_minimo'] is not None else '',
+            'Property type': 'Apartment',
+            'Listing type': 'For sale',
+            'Contextual keywords': '; '.join(filter(None, ['Imóveis à venda',e['cidade'],e['bairro']])),
+            'Address': ', '.join(filter(None, [e['cidade'], 'Brazil']))
+        })
+    return output.getvalue().encode('utf-8-sig')
+
+
+def make_merchant_feed(entries):
+    """Feed XML com esquema de atributos Merchant (formato somente).
+
+    Imóveis são inelegíveis para Shopping; gerar XML não implica aprovação.
+    Não contém a homepage como item.
+    """
+    rss = ET.Element('rss', {'version': '2.0'})
+    channel = ET.SubElement(rss, 'channel')
+    ET.SubElement(channel, 'title').text = 'Catálogo de empreendimentos MCMV-RS'
+    ET.SubElement(channel, 'link').text = SITE
+    ET.SubElement(channel, 'description').text = 'Registros comerciais de empreendimentos imobiliários'
+    G = 'http://base.google.com/ns/1.0'
+    ET.register_namespace('g', G)
+    for e in entries:
+        if e['valor_minimo'] is None:
+            continue
+        item = ET.SubElement(channel, 'item')
+        fields = {
+            'id': e['id'], 'title': e['nome'],
+            'description': e['descricao'] or e['nome'],
+            'link': SITE, 'image_link': e['imagem'],
+            'price': f"{e['valor_minimo']:.2f} BRL",
+            'availability': 'in_stock', 'condition': 'new'
+        }
+        for key, value in fields.items():
+            ET.SubElement(item, f'{{{G}}}{key}').text = value
+    ET.indent(rss, space='  ')
+    data = b'<?xml version="1.0" encoding="UTF-8"?>\n' + ET.tostring(rss,encoding='utf-8') + b'\n'
+    ET.fromstring(data)
+    return data
+
+
 def make_robots(previous):
     text = previous.decode('utf-8-sig') if previous is not None else 'User-agent: *\nAllow: /\n'
     lines = [line for line in text.splitlines() if not re.match(r'^\s*Sitemap\s*:', line, re.I)]
@@ -194,7 +257,9 @@ def main():
         'sitemap.xml': make_sitemap(entries),
         'llms.txt': make_llms(entries),
         'catalogo.json': make_catalog(entries),
-        'robots.txt': make_robots((ROOT / 'robots.txt').read_bytes() if (ROOT / 'robots.txt').exists() else None)
+        'robots.txt': make_robots((ROOT / 'robots.txt').read_bytes() if (ROOT / 'robots.txt').exists() else None),
+        'google-ads-imoveis.csv': make_ads_feed(entries),
+        'merchant-produtos.xml': make_merchant_feed(entries)
     }
     for name, data in results.items():
         write_if_changed(name, data)

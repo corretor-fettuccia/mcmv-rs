@@ -12,6 +12,7 @@ try {
   assert(catalog.total_empreendimentos === catalog.empreendimentos.length, 'Contagem divergente');
   const itemUrls = catalog.empreendimentos.map(item => {
     assert(item.nome && item.url_busca === site, 'Registro incompleto');
+    assert(/^https:\/\/[^\s]+$/.test(item.imagem), `Imagem ausente/inválida: ${item.nome}`);
     assert(/^https:\/\/[^\s]+$/.test(item.url_empreendimento), 'URL inválida');
     return item.url_empreendimento;
   });
@@ -21,6 +22,16 @@ try {
   const expected = [...new Set([site, ...itemUrls])];
   assert(actual.length === new Set(actual).size, 'URLs duplicadas no sitemap');
   assert(JSON.stringify([...actual].sort()) === JSON.stringify(expected.sort()), 'Sitemap divergente da API');
+  const ads = read('google-ads-imoveis.csv');
+  assert(ads.includes('Listing ID') && ads.includes('Image URL'), 'CSV Ads sem cabeçalho');
+  for (const item of catalog.empreendimentos) {
+    assert(ads.includes(item.imagem), `Imagem não encontrada no feed Ads: ${item.nome}`);
+  }
+  const merchant = read('merchant-produtos.xml');
+  assert(merchant.includes('<g:image_link>'), 'XML sem image_link');
+  for (const item of catalog.empreendimentos) {
+    if (item.valor_minimo !== null) assert(merchant.includes(item.imagem), `Imagem não encontrada no XML: ${item.nome}`);
+  }
   const llms = read('llms.txt');
   assert(llms.startsWith('# MCMV-RS'), 'llms.txt sem título');
   assert(llms.includes(site), 'llms.txt sem homepage');
