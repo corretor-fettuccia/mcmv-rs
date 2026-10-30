@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:g="http://base.google.com/ns/1.0" version="2.0">
+  <channel>
+    <title>Catálogo de empreendimentos MCMV-RS</title>
+    <link>https://mcmv-rs.com.br/</link>
+    <description>Registros comerciais de empreendimentos imobiliários</description>
+    <item>
+      <g:id>024f19c7-4b38-4fc0-b633-fd81a675eaf6</g:id>
+      <g:title>Mezzano Canoas</g:title>
+      <g:description>Parcela R$3.500,00/Mês, torre única com 36 apartamentos de 2 dormitórios, suíte e sacada com churrasqueira. Piscina no rooftop. Minha Casa minha Vida.</g:description>
+      <g:link>https://mcmv-rs.com.br/</g:link>
+      <g:image_link>https://mezzano.mcmv-rs.com.br/share.png</g:image_link>
+      <g:price>500000.00 BRL</g:price>
+      <g:availability>in_stock</g:availability>
+      <g:condition>new</g:condition>
+    </item>
+    <item>
+      <g:id>73bc8ab9-d290-4840-852a-c5323fc448c4</g:id>
+      <g:title>Napoles - Canoas</g:title>
+      <g:description>Apartamento por R$2.000 mês o Nápoles Clube Residencial na Estância Velha, Canoas. Apartamentos de 2 dormitórios, sacada com churrasqueira e lazer.</g:description>
+      <g:link>https://mcmv-rs.com.br/</g:link>
+      <g:image_link>https://napoles.mcmv-rs.com.br/share.webp</g:image_link>
+      <g:price>250000.00 BRL</g:price>
+      <g:availability>in_stock</g:availability>
+      <g:condition>new</g:condition>
+    </item>
+    <item>
+      <g:id>2aedf382-a709-454e-9990-5e756eab3aad</g:id>
+      <g:title>LinQ Your Place</g:title>
+      <g:description>LINQ Your Place no Igara, Canoas: apartamentos de 2 dormitórios, sacada com churrasqueira e lazer. Minha Casa Minha Vida com parcelas na faixa de R$ 2 mil/mês.</g:description>
+      <g:link>https://mcmv-rs.com.br/</g:link>
+      <g:image_link>https://linq.mcmv-rs.com.br/share.webp</g:image_link>
+      <g:price>250000.00 BRL</g:price>
+      <g:availability>in_stock</g:availability>
+      <g:condition>new</g:condition>
+    </item>
+    <item>
+      <g:id>b35eb2bb-8656-4da7-b7be-2567b1925cdc</g:id>
+      <g:title>Varandas Trend Living</g:title>
+      <g:description>Apartamento em Canoas no bairro Nossa Senhora das Graças com churrasqueira e rooftop. Alto padrão com vaga dupla e excelente localização.</g:description>
+      <g:link>https://mcmv-rs.com.br/</g:link>
+      <g:image_link>https://varandas-canoas.com.br/share.webp</g:image_link>
+      <g:price>503000.00 BRL</g:price>
+      <g:availability>in_stock</g:availability>
+      <g:condition>new</g:condition>
+    </item>
+  </channel>
+</rss>

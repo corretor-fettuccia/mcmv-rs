@@ -79,5 +79,9 @@
       "url_empreendimento": "https://varandas-canoas.com.br/",
       "url_busca": "https://mcmv-rs.com.br/"
     }
-  ]
+  ],
+  "feeds": {
+    "google_ads_imoveis": "https://mcmv-rs.com.br/google-ads-imoveis.csv",
+    "merchant_formato": "https://mcmv-rs.com.br/merchant-produtos.xml"
+  }
 }
