@@ -7,6 +7,7 @@ on:
   push:
     paths:
       - 'scripts/generate_discovery.py'
+      - 'scripts/validate_discovery.js'
       - '.github/workflows/gerar-indexacao.yml'
 
 permissions:
@@ -21,37 +22,28 @@ jobs:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout do repositorio
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           persist-credentials: true
-      - name: Configurar Python
+      - name: Python 3.12
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Gerar arquivos pela API
+      - name: Gerar arquivos via API
         env:
           VITRINE_API_URL: ${{ vars.VITRINE_API_URL }}
         run: python scripts/generate_discovery.py
-      - name: Validar arquivos gerados
-        run: |
-          python - <<'PY'
-          import json, xml.etree.ElementTree as ET
-          from pathlib import Path
-          assert len(ET.parse('sitemap.xml').getroot()) == 1
-          assert 'https://mcmv-rs.com.br/' in Path('sitemap.xml').read_text()
-          doc=json.loads(Path('catalogo.json').read_text(encoding='utf-8'))
-          assert doc['empreendimentos'] and doc['url_principal']=='https://mcmv-rs.com.br/'
-          assert Path('llms.txt').read_text(encoding='utf-8').startswith('# MCMV-RS')
-          assert 'Sitemap: https://mcmv-rs.com.br/sitemap.xml' in Path('robots.txt').read_text()
-          print('Validacao concluida; registros:', len(doc['empreendimentos']))
-          PY
-      - name: Publicar somente se houver alteracoes
+      - name: Validar arquivos
+        run: node scripts/validate_discovery.js
+      - name: Commit somente se houver alteracoes
         run: |
           git add sitemap.xml llms.txt catalogo.json robots.txt
           if git diff --cached --quiet; then
-            echo 'Nenhuma alteracao para publicar.'
+            echo 'Sem alteracoes.'
             exit 0
           fi
-          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'Atualiza indices publicos do MCMV-RS'
+          git -c user.name='github-actions[bot]' \
+              -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+              commit -m 'Atualiza descoberta MCMV-RS'
           git push
