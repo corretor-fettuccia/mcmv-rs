@@ -1,0 +1,83 @@
+{
+  "nome": "MCMV-RS",
+  "tipo": "portal_independente_de_busca_imobiliaria",
+  "descricao": "Ferramenta independente para localizar imóveis e empreendimentos pelo Minha Casa Minha Vida no Rio Grande do Sul.",
+  "url_principal": "https://mcmv-rs.com.br/",
+  "url_pesquisa": "https://mcmv-rs.com.br/",
+  "filtros": [
+    "regiao",
+    "cidade",
+    "bairro",
+    "nome_do_empreendimento",
+    "situacao",
+    "renda_familiar"
+  ],
+  "aviso": "Portal independente, sem vínculo institucional com a CAIXA ou órgãos governamentais. Elegibilidade, valores e disponibilidade sujeitos a confirmação.",
+  "total_empreendimentos": 4,
+  "empreendimentos": [
+    {
+      "id": "024f19c7-4b38-4fc0-b633-fd81a675eaf6",
+      "nome": "Mezzano Canoas",
+      "descricao": "Parcela R$3.500,00/Mês, torre única com 36 apartamentos de 2 dormitórios, suíte e sacada com churrasqueira. Piscina no rooftop. Minha Casa minha Vida.",
+      "cidade": "Canoas",
+      "bairro": "Centro",
+      "regiao": "Metropolitana RS",
+      "uf": "RS",
+      "endereco": "Domingos martins, 584, Centro, Canoas-RS",
+      "situacao": "Na planta",
+      "valor_minimo": 500000,
+      "valor_maximo": 530000,
+      "imagem": "https://mezzano.mcmv-rs.com.br/share.png",
+      "url_empreendimento": "https://mezzano.mcmv-rs.com.br/",
+      "url_busca": "https://mcmv-rs.com.br/"
+    },
+    {
+      "id": "73bc8ab9-d290-4840-852a-c5323fc448c4",
+      "nome": "Napoles - Canoas",
+      "descricao": "Apartamento por R$2.000 mês o Nápoles Clube Residencial na Estância Velha, Canoas. Apartamentos de 2 dormitórios, sacada com churrasqueira e lazer.",
+      "cidade": "Canoas",
+      "bairro": "Estância velha",
+      "regiao": "Metropolitana RS",
+      "uf": "RS",
+      "endereco": "Av. Santos Ferreira, 4200",
+      "situacao": "Na planta",
+      "valor_minimo": 250000,
+      "valor_maximo": 350000,
+      "imagem": "https://napoles.mcmv-rs.com.br/share.webp",
+      "url_empreendimento": "https://napoles.mcmv-rs.com.br/",
+      "url_busca": "https://mcmv-rs.com.br/"
+    },
+    {
+      "id": "2aedf382-a709-454e-9990-5e756eab3aad",
+      "nome": "LinQ Your Place",
+      "descricao": "LINQ Your Place no Igara, Canoas: apartamentos de 2 dormitórios, sacada com churrasqueira e lazer. Minha Casa Minha Vida com parcelas na faixa de R$ 2 mil/mês.",
+      "cidade": "Canoas",
+      "bairro": "Igara",
+      "regiao": "Metropolitana RS",
+      "uf": "RS",
+      "endereco": "Camboatás, 465, Igara, Canoas-RS",
+      "situacao": "Na planta",
+      "valor_minimo": 250000,
+      "valor_maximo": 350000,
+      "imagem": "https://linq.mcmv-rs.com.br/share.webp",
+      "url_empreendimento": "https://linq.mcmv-rs.com.br/",
+      "url_busca": "https://mcmv-rs.com.br/"
+    },
+    {
+      "id": "b35eb2bb-8656-4da7-b7be-2567b1925cdc",
+      "nome": "Varandas Trend Living",
+      "descricao": "Apartamento em Canoas no bairro Nossa Senhora das Graças com churrasqueira e rooftop. Alto padrão com vaga dupla e excelente localização.",
+      "cidade": "Canoas",
+      "bairro": "Marechal Rondon",
+      "regiao": "Metropolitana RS",
+      "uf": "RS",
+      "endereco": "",
+      "situacao": "Na planta",
+      "valor_minimo": 503000,
+      "valor_maximo": 940000,
+      "imagem": "https://varandas-canoas.com.br/share.webp",
+      "url_empreendimento": "https://varandas-canoas.com.br/",
+      "url_busca": "https://mcmv-rs.com.br/"
+    }
+  ]
+}
