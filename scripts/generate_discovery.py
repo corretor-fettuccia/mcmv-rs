@@ -1,20 +1,17 @@
 #!/usr/bin/env python3
-"""Gera sitemap.xml, robots.txt, llms.txt e catalogo.json na raiz do repo.
-
-API como fonte de dados; nenhuma alteração em index.html, config.js ou app.js.
-Se a API falhar, não substitui qualquer arquivo publicado.
+"""Gera sitemap.xml, llms.txt, catalogo.json e robots.txt a partir da API.
+Não altera HTML, app.js ou config.js. Preserva saídas quando API falha.
 """
+import hashlib
 import json
 import os
 import re
 import sys
-import hashlib
-from datetime import datetime, timezone
+import xml.etree.ElementTree as ET
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlsplit, urlunsplit
 from urllib.request import Request, urlopen
-import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parent.parent
 SITE = 'https://mcmv-rs.com.br/'
@@ -24,12 +21,11 @@ ET.register_namespace('', NS)
 
 
 def api_url():
-    override = os.getenv('VITRINE_API_URL', '').strip()
-    if override:
-        return override
-    path = ROOT / 'config.js'
-    if path.is_file():
-        match = re.search(r'''window\s*\.\s*VITRINE_API_URL\s*=\s*['"]([^'"]+)['"]''', path.read_text(encoding='utf-8'))
+    if os.getenv('VITRINE_API_URL', '').strip():
+        return os.environ['VITRINE_API_URL'].strip()
+    config = ROOT / 'config.js'
+    if config.is_file():
+        match = re.search(r'''window\s*\.\s*VITRINE_API_URL\s*=\s*['"]([^'"]+)['"]''', config.read_text(encoding='utf-8'))
         if match:
             return match.group(1)
     return API_FALLBACK
@@ -42,198 +38,165 @@ def load_payload():
     else:
         endpoint = api_url()
         if not endpoint.startswith('https://'):
-            raise RuntimeError('A URL da API deve usar HTTPS')
-        print('Consultando API JSON:', endpoint, flush=True)
-        req = Request(endpoint, headers={'Accept': 'application/json', 'User-Agent': 'MCMV-RS-Discovery/1.0'})
+            raise RuntimeError('Endpoint precisa usar HTTPS')
+        req = Request(endpoint, headers={'Accept': 'application/json', 'User-Agent': 'MCMV-RS-Discovery/2.0'})
+        print('Consultando API:', endpoint, flush=True)
         try:
             with urlopen(req, timeout=40) as response:
                 raw = response.read(5_000_001)
-                print('HTTP:', response.status, '| Content-Type:', response.headers.get('Content-Type'), flush=True)
+                print('HTTP:', response.status, flush=True)
         except (HTTPError, URLError, TimeoutError) as exc:
-            raise RuntimeError(f'Falha ao consultar API: {exc}') from exc
+            raise RuntimeError(f'Erro ao consultar API: {exc}') from exc
     if len(raw) > 5_000_000:
-        raise RuntimeError('Resposta excede 5 MB')
+        raise RuntimeError('Resposta maior que 5 MB')
     try:
-        payload = json.loads(raw.decode('utf-8-sig'))
+        data = json.loads(raw.decode('utf-8-sig'))
     except (ValueError, UnicodeDecodeError) as exc:
-        raise RuntimeError('A resposta da API não é JSON válido') from exc
-    if not isinstance(payload, dict) or payload.get('ok') is not True:
-        raise RuntimeError('API não retornou ok:true; arquivos anteriores preservados')
-    if not isinstance(payload.get('items'), list) or not payload['items']:
-        raise RuntimeError('items[] ausente ou vazio; arquivos anteriores preservados')
-    return payload
+        raise RuntimeError('Resposta não é JSON válido') from exc
+    if not isinstance(data, dict) or data.get('ok') is not True:
+        raise RuntimeError('API não retornou ok:true')
+    if not isinstance(data.get('items'), list) or not data['items']:
+        raise RuntimeError('items ausente/vazio; saídas anteriores preservadas')
+    return data
 
 
 def valid_url(value):
-    if not isinstance(value, str) or not value.strip() or any(ch.isspace() for ch in value):
+    if not isinstance(value, str) or not value.strip() or any(c.isspace() for c in value):
         return None
     try:
-        parts = urlsplit(value.strip())
-        if parts.scheme != 'https' or not parts.hostname or parts.username or parts.password or parts.port not in (None, 443):
-            return None
-        if parts.hostname in ('localhost',) or parts.hostname.endswith('.local'):
+        p = urlsplit(value.strip())
+        if p.scheme != 'https' or not p.hostname or p.username or p.password or p.port not in (None, 443):
             return None
     except ValueError:
         return None
-    return urlunsplit(('https', parts.netloc.lower(), parts.path or '/', parts.query, ''))
+    return urlunsplit(('https', p.netloc.lower(), p.path or '/', p.query, ''))
 
 
 def clean(value, limit=500):
-    if value is None:
-        return ''
-    text = re.sub(r'\s+', ' ', str(value)).strip()
-    return text[:limit]
+    return re.sub(r'\s+', ' ', str(value or '')).strip()[:limit]
 
 
-def money(value):
-    if not isinstance(value, (int, float)) or isinstance(value, bool) or value < 0:
+def price(value):
+    if isinstance(value, bool) or not isinstance(value, (int, float)) or value < 0:
         return None
     return int(value) if float(value).is_integer() else value
 
 
 def normalize(payload):
-    entries = []
-    ids = set()
-    for i, item in enumerate(payload['items']):
+    result, ids = [], set()
+    for item in payload['items']:
         if not isinstance(item, dict) or item.get('indexar') is False or item.get('noindex') is True:
             continue
-        name = clean(item.get('name'), 140)
-        landing = valid_url(item.get('url'))
-        if not name or not landing:
-            print('Ignorando item incompleto:', i, flush=True)
+        url, name = valid_url(item.get('url')), clean(item.get('name'), 140)
+        if not url or not name:
+            print('Ignorado registro sem nome/URL válido:', clean(item.get('name') if isinstance(item, dict) else '', 60))
             continue
-        item_id = clean(item.get('id'), 120) or hashlib.sha256(landing.encode()).hexdigest()[:16]
-        if item_id in ids:
-            raise RuntimeError('ID duplicado na API: ' + item_id)
-        ids.add(item_id)
-        minimum, maximum = money(item.get('minimum')), money(item.get('maximum'))
-        if minimum is not None and maximum is not None and minimum > maximum:
-            raise RuntimeError('Faixa de valores invertida: ' + name)
-        entries.append({
-            'id': item_id,
-            'nome': name,
-            'descricao': clean(item.get('highlight'), 600),
-            'cidade': clean(item.get('city'), 90),
-            'bairro': clean(item.get('neighborhood'), 90),
-            'regiao': clean(item.get('region'), 90),
-            'uf': clean(item.get('uf'), 2),
-            'endereco': clean(item.get('address'), 200),
-            'situacao': clean(item.get('state'), 80),
-            'valor_minimo': minimum,
-            'valor_maximo': maximum,
-            'imagem': valid_url(item.get('image')),
-            'url_empreendimento': landing,
-            'url_busca': SITE,
+        ident = clean(item.get('id'), 120) or hashlib.sha256(url.encode()).hexdigest()[:16]
+        if ident in ids:
+            raise RuntimeError(f'ID duplicado: {ident}')
+        ids.add(ident)
+        low, high = price(item.get('minimum')), price(item.get('maximum'))
+        if low is not None and high is not None and low > high:
+            raise RuntimeError(f'Preços invertidos: {name}')
+        result.append({
+            'id': ident, 'nome': name, 'descricao': clean(item.get('highlight'), 600),
+            'cidade': clean(item.get('city'), 90), 'bairro': clean(item.get('neighborhood'), 90),
+            'regiao': clean(item.get('region'), 90), 'uf': clean(item.get('uf'), 2),
+            'endereco': clean(item.get('address'), 200), 'situacao': clean(item.get('state'), 80),
+            'valor_minimo': low, 'valor_maximo': high,
+            'imagem': valid_url(item.get('image')), 'url_empreendimento': url, 'url_busca': SITE
         })
-    if not entries:
-        raise RuntimeError('Nenhum empreendimento válido; arquivos anteriores preservados')
-    entries.sort(key=lambda e: (e['cidade'].casefold(), e['bairro'].casefold(), e['nome'].casefold(), e['id']))
-    return entries
+    if not result:
+        raise RuntimeError('Nenhum empreendimento válido; saídas preservadas')
+    result.sort(key=lambda x: (x['cidade'].casefold(), x['bairro'].casefold(), x['nome'].casefold(), x['id']))
+    return result
 
 
-def make_sitemap():
-    # Intencionalmente apenas a raiz: usuário não quer URLs de subdomínios ou anúncios.
+def make_sitemap(entries):
+    urls = {SITE}
+    urls.update(e['url_empreendimento'] for e in entries)
     root = ET.Element(f'{{{NS}}}urlset')
-    ET.SubElement(ET.SubElement(root, f'{{{NS}}}url'), f'{{{NS}}}loc').text = SITE
+    for url in [SITE] + sorted(urls - {SITE}):
+        ET.SubElement(ET.SubElement(root, f'{{{NS}}}url'), f'{{{NS}}}loc').text = url
     ET.indent(root, space='  ')
-    content = b'<?xml version="1.0" encoding="UTF-8"?>\n' + ET.tostring(root, encoding='utf-8') + b'\n'
-    ET.fromstring(content)
-    return content
-
-
-def make_robots(existing):
-    # Evita apagar regras existentes do arquivo; adiciona/atualiza apenas Sitemap.
-    existing_text = existing.decode('utf-8-sig') if existing else 'User-agent: *\nAllow: /\n'
-    lines = [line for line in existing_text.splitlines() if not re.match(r'^\s*Sitemap\s*:', line, re.I)]
-    result = '\n'.join(lines).rstrip() + '\n\nSitemap: https://mcmv-rs.com.br/sitemap.xml\n'
-    return result.encode('utf-8')
+    xml = b'<?xml version="1.0" encoding="UTF-8"?>\n' + ET.tostring(root, encoding='utf-8') + b'\n'
+    ET.fromstring(xml)
+    return xml
 
 
 def make_catalog(entries):
-    # Sem timestamp variável para evitar commits desnecessários; alteração no conteúdo gera novo commit.
-    doc = {
-        'nome': 'MCMV-RS',
-        'tipo': 'portal_independente_de_busca_imobiliaria',
-        'descricao': 'Ferramenta independente para localizar imóveis e empreendimentos pelo Minha Casa Minha Vida no Rio Grande do Sul.',
-        'url_principal': SITE,
-        'url_pesquisa': SITE,
+    document = {
+        'nome': 'MCMV-RS', 'tipo': 'portal_independente_de_busca_imobiliaria',
+        'descricao': 'Portal independente para pesquisar imóveis e empreendimentos no Rio Grande do Sul.',
+        'url_principal': SITE, 'url_pesquisa': SITE,
         'filtros': ['regiao', 'cidade', 'bairro', 'nome_do_empreendimento', 'situacao', 'renda_familiar'],
-        'aviso': 'Portal independente, sem vínculo institucional com a CAIXA ou órgãos governamentais. Elegibilidade, valores e disponibilidade sujeitos a confirmação.',
-        'total_empreendimentos': len(entries),
-        'empreendimentos': entries,
+        'aviso': 'Sem vínculo institucional com CAIXA ou Governo Federal. Valores e condições sujeitos a confirmação.',
+        'total_empreendimentos': len(entries), 'empreendimentos': entries
     }
-    return (json.dumps(doc, ensure_ascii=False, indent=2, allow_nan=False) + '\n').encode('utf-8')
+    return (json.dumps(document, ensure_ascii=False, indent=2, allow_nan=False) + '\n').encode('utf-8')
 
 
 def make_llms(entries):
     lines = [
-        '# MCMV-RS — Busca de Imóveis Minha Casa Minha Vida no RS',
-        '',
-        '> Ferramenta independente de busca imobiliária para localizar apartamentos, casas e empreendimentos no Rio Grande do Sul. A busca pública e o destino principal são https://mcmv-rs.com.br/.',
-        '',
-        '## Ferramenta de pesquisa',
-        '',
-        '- [Pesquisar imóveis pelo Minha Casa Minha Vida no RS](https://mcmv-rs.com.br/): busque por cidade, bairro, região ou nome do empreendimento e utilize a simulação estimativa pela renda familiar.',
-        '- Catálogo estruturado (dados públicos): https://mcmv-rs.com.br/catalogo.json',
-        '',
-        '## Empreendimentos encontrados na ferramenta',
-        '',
-        'Os itens abaixo são registros do catálogo. Para pesquisar e consultar alternativas, utilize a página principal https://mcmv-rs.com.br/.',
-        '',
+        '# MCMV-RS — Busca de Imóveis Minha Casa Minha Vida no RS', '',
+        '> Portal imobiliário independente de pesquisa de apartamentos, casas e empreendimentos no Rio Grande do Sul. A ferramenta pública de busca é https://mcmv-rs.com.br/.', '',
+        '## Ferramenta de pesquisa', '',
+        '- [Pesquisar imóveis no MCMV-RS](https://mcmv-rs.com.br/): filtros de região, cidade, bairro, situação e renda familiar.',
+        '- [Catálogo de dados públicos](https://mcmv-rs.com.br/catalogo.json): registros atualizados de empreendimentos.', '',
+        '## Empreendimentos disponíveis no catálogo', '',
+        'Para pesquisar ou comparar alternativas, acesse https://mcmv-rs.com.br/. As páginas externas abaixo são referências comerciais.', ''
     ]
     for e in entries:
+        lines.append('### ' + e['nome'].replace('\n', ' '))
         place = ', '.join(filter(None, [e['bairro'], e['cidade'], e['uf']]))
-        label = e['nome'].replace('[', '').replace(']', '')
-        lines.append(f'### {label}')
         if place:
-            lines.append(f'- Localização: {place}')
+            lines.append('- Localização: ' + place)
         if e['descricao']:
             lines.append('- Descrição: ' + e['descricao'])
         if e['situacao']:
             lines.append('- Situação: ' + e['situacao'])
         if e['valor_minimo'] is not None and e['valor_maximo'] is not None:
-            lines.append(f"- Faixa anunciada: R$ {e['valor_minimo']:,.0f} a R$ {e['valor_maximo']:,.0f}".replace(',', '.'))
-        lines.append('- Pesquisar imóvel: https://mcmv-rs.com.br/')
-        # URL comercial é referência secundária, sem link Markdown chamativo.
+            lines.append('- Preços informados: R$ {:,.0f} a R$ {:,.0f}'.format(e['valor_minimo'], e['valor_maximo']).replace(',', '.'))
+        lines.append('- Pesquisar: ' + SITE)
         lines.append('- Referência do empreendimento: ' + e['url_empreendimento'])
         lines.append('')
-    lines += [
-        '## Limitações e transparência',
-        '',
+    lines.extend([
+        '## Transparência', '',
         '- O MCMV-RS não é site oficial da CAIXA ou do Governo Federal.',
-        '- O cadastro na vitrine não garante elegibilidade ao programa Minha Casa Minha Vida.',
-        '- Os preços, condições, disponibilidade e resultados de simulação devem ser confirmados.',
-        '- Para localizar imóveis, preferir a ferramenta pública na raiz: https://mcmv-rs.com.br/.',
-        '',
-    ]
+        '- A inclusão no catálogo não garante elegibilidade ao Minha Casa Minha Vida.',
+        '- Disponibilidade, preços e financiamento estão sujeitos à confirmação.',
+        '- A pesquisa de imóveis é realizada na página principal: https://mcmv-rs.com.br/.', ''
+    ])
     return '\n'.join(lines).encode('utf-8')
 
 
+def make_robots(previous):
+    text = previous.decode('utf-8-sig') if previous is not None else 'User-agent: *\nAllow: /\n'
+    lines = [line for line in text.splitlines() if not re.match(r'^\s*Sitemap\s*:', line, re.I)]
+    return ('\n'.join(lines).rstrip() + '\n\nSitemap: https://mcmv-rs.com.br/sitemap.xml\n').encode('utf-8')
+
+
 def write_if_changed(filename, content):
-    target = ROOT / filename
-    if target.is_file() and target.read_bytes() == content:
-        print('Sem alterações:', filename, flush=True)
+    path = ROOT / filename
+    if path.exists() and path.read_bytes() == content:
+        print('Sem mudanças:', filename)
         return
     temp = ROOT / (filename + '.tmp')
     temp.write_bytes(content)
-    temp.replace(target)
-    print('Atualizado:', filename, flush=True)
+    temp.replace(path)
+    print('Atualizado:', filename)
 
 
 def main():
-    payload = load_payload()
-    entries = normalize(payload)
-    print('Empreendimentos válidos:', len(entries), flush=True)
-    # Todos os arquivos são preparados e validados ANTES de qualquer escrita.
-    content = {
-        'sitemap.xml': make_sitemap(),
-        'catalogo.json': make_catalog(entries),
+    entries = normalize(load_payload())
+    print('Empreendimentos:', len(entries))
+    results = {
+        'sitemap.xml': make_sitemap(entries),
         'llms.txt': make_llms(entries),
-        'robots.txt': make_robots((ROOT / 'robots.txt').read_bytes() if (ROOT / 'robots.txt').exists() else None),
+        'catalogo.json': make_catalog(entries),
+        'robots.txt': make_robots((ROOT / 'robots.txt').read_bytes() if (ROOT / 'robots.txt').exists() else None)
     }
-    json.loads(content['catalogo.json'])
-    ET.fromstring(content['sitemap.xml'])
-    for name, data in content.items():
+    for name, data in results.items():
         write_if_changed(name, data)
 
 
@@ -241,5 +204,5 @@ if __name__ == '__main__':
     try:
         main()
     except Exception as exc:
-        print('ERRO:', exc, file=sys.stderr, flush=True)
+        print('ERRO:', exc, file=sys.stderr)
         sys.exit(1)
