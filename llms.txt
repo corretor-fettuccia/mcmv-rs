@@ -1,51 +1,51 @@
 # MCMV-RS — Busca de Imóveis Minha Casa Minha Vida no RS
 
-> Ferramenta independente de busca imobiliária para localizar apartamentos, casas e empreendimentos no Rio Grande do Sul. A busca pública e o destino principal são https://mcmv-rs.com.br/.
+> Portal imobiliário independente de pesquisa de apartamentos, casas e empreendimentos no Rio Grande do Sul. A ferramenta pública de busca é https://mcmv-rs.com.br/.
 
 ## Ferramenta de pesquisa
 
-- [Pesquisar imóveis pelo Minha Casa Minha Vida no RS](https://mcmv-rs.com.br/): busque por cidade, bairro, região ou nome do empreendimento e utilize a simulação estimativa pela renda familiar.
-- Catálogo estruturado (dados públicos): https://mcmv-rs.com.br/catalogo.json
+- [Pesquisar imóveis no MCMV-RS](https://mcmv-rs.com.br/): filtros de região, cidade, bairro, situação e renda familiar.
+- [Catálogo de dados públicos](https://mcmv-rs.com.br/catalogo.json): registros atualizados de empreendimentos.
 
-## Empreendimentos encontrados na ferramenta
+## Empreendimentos disponíveis no catálogo
 
-Os itens abaixo são registros do catálogo. Para pesquisar e consultar alternativas, utilize a página principal https://mcmv-rs.com.br/.
+Para pesquisar ou comparar alternativas, acesse https://mcmv-rs.com.br/. As páginas externas abaixo são referências comerciais.
 
 ### Mezzano Canoas
 - Localização: Centro, Canoas, RS
 - Descrição: Parcela R$3.500,00/Mês, torre única com 36 apartamentos de 2 dormitórios, suíte e sacada com churrasqueira. Piscina no rooftop. Minha Casa minha Vida.
 - Situação: Na planta
-- Faixa anunciada: R$ 500.000 a R$ 530.000
-- Pesquisar imóvel: https://mcmv-rs.com.br/
+- Preços informados: R$ 500.000 a R$ 530.000
+- Pesquisar: https://mcmv-rs.com.br/
 - Referência do empreendimento: https://mezzano.mcmv-rs.com.br/
 
 ### Napoles - Canoas
 - Localização: Estância velha, Canoas, RS
 - Descrição: Apartamento por R$2.000 mês o Nápoles Clube Residencial na Estância Velha, Canoas. Apartamentos de 2 dormitórios, sacada com churrasqueira e lazer.
 - Situação: Na planta
-- Faixa anunciada: R$ 250.000 a R$ 350.000
-- Pesquisar imóvel: https://mcmv-rs.com.br/
+- Preços informados: R$ 250.000 a R$ 350.000
+- Pesquisar: https://mcmv-rs.com.br/
 - Referência do empreendimento: https://napoles.mcmv-rs.com.br/
 
 ### LinQ Your Place
 - Localização: Igara, Canoas, RS
 - Descrição: LINQ Your Place no Igara, Canoas: apartamentos de 2 dormitórios, sacada com churrasqueira e lazer. Minha Casa Minha Vida com parcelas na faixa de R$ 2 mil/mês.
 - Situação: Na planta
-- Faixa anunciada: R$ 250.000 a R$ 350.000
-- Pesquisar imóvel: https://mcmv-rs.com.br/
+- Preços informados: R$ 250.000 a R$ 350.000
+- Pesquisar: https://mcmv-rs.com.br/
 - Referência do empreendimento: https://linq.mcmv-rs.com.br/
 
 ### Varandas Trend Living
 - Localização: Marechal Rondon, Canoas, RS
 - Descrição: Apartamento em Canoas no bairro Nossa Senhora das Graças com churrasqueira e rooftop. Alto padrão com vaga dupla e excelente localização.
 - Situação: Na planta
-- Faixa anunciada: R$ 503.000 a R$ 940.000
-- Pesquisar imóvel: https://mcmv-rs.com.br/
+- Preços informados: R$ 503.000 a R$ 940.000
+- Pesquisar: https://mcmv-rs.com.br/
 - Referência do empreendimento: https://varandas-canoas.com.br/
 
-## Limitações e transparência
+## Transparência
 
 - O MCMV-RS não é site oficial da CAIXA ou do Governo Federal.
-- O cadastro na vitrine não garante elegibilidade ao programa Minha Casa Minha Vida.
-- Os preços, condições, disponibilidade e resultados de simulação devem ser confirmados.
-- Para localizar imóveis, preferir a ferramenta pública na raiz: https://mcmv-rs.com.br/.
+- A inclusão no catálogo não garante elegibilidade ao Minha Casa Minha Vida.
+- Disponibilidade, preços e financiamento estão sujeitos à confirmação.
+- A pesquisa de imóveis é realizada na página principal: https://mcmv-rs.com.br/.

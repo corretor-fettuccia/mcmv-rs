@@ -1,7 +1,7 @@
 {
   "nome": "MCMV-RS",
   "tipo": "portal_independente_de_busca_imobiliaria",
-  "descricao": "Ferramenta independente para localizar imóveis e empreendimentos pelo Minha Casa Minha Vida no Rio Grande do Sul.",
+  "descricao": "Portal independente para pesquisar imóveis e empreendimentos no Rio Grande do Sul.",
   "url_principal": "https://mcmv-rs.com.br/",
   "url_pesquisa": "https://mcmv-rs.com.br/",
   "filtros": [
@@ -12,7 +12,7 @@
     "situacao",
     "renda_familiar"
   ],
-  "aviso": "Portal independente, sem vínculo institucional com a CAIXA ou órgãos governamentais. Elegibilidade, valores e disponibilidade sujeitos a confirmação.",
+  "aviso": "Sem vínculo institucional com CAIXA ou Governo Federal. Valores e condições sujeitos a confirmação.",
   "total_empreendimentos": 4,
   "empreendimentos": [
     {
