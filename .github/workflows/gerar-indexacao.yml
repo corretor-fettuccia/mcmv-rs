@@ -38,7 +38,7 @@ jobs:
         run: node scripts/validate_discovery.js
       - name: Commit somente se houver alteracoes
         run: |
-          git add sitemap.xml llms.txt catalogo.json robots.txt
+          git add sitemap.xml llms.txt catalogo.json robots.txt google-ads-imoveis.csv merchant-produtos.xml
           if git diff --cached --quiet; then
             echo 'Sem alteracoes.'
             exit 0
