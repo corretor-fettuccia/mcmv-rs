@@ -4,8 +4,8 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" name="viewport"/>
-<title>Minha Casa Minha Vida RS | Apartamentos e Empreendimentos</title>
-<meta name="description" content="Encontre apartamentos e empreendimentos Minha Casa Minha Vida no Rio Grande do Sul. Pesquise por cidade, bairro e conheça opções de financiamento.">
+<title>Minha Casa Minha Vida RS | Apartamentos e Casas à Venda </title>
+<meta name="description" content="Encontre seu imóvel pelo Minha Casa Minha Vida no Rio Grande do Sul. Pesquise por cidade, bairro e conheça opções de financiamento.">
 <style>
     :root{--ink:#13243a;--teal:#087d77;--teal2:#11a497;--pale:#ebf7f4;--muted:#5c6d7e;--line:#dee8e7;--bg:#f4f7f7;--card:#fff;--gold:#efc87c}
     *{box-sizing:border-box}
@@ -123,10 +123,10 @@ html{scroll-padding-top:92px}body{font-family:system-ui,-apple-system,"Segoe UI"
 <meta property="og:locale" content="pt_BR">
 <meta property="og:site_name" content="Minha Casa Minha Vida RS">
 <meta property="og:title" content="Minha Casa Minha Vida RS | Apartamentos, Casas, Empreendimentos.">
-<meta property="og:description" content="Pesquise imóveis e empreendimentos Minha Casa Minha Vida por cidade e bairro no Rio Grande do Sul.">
+<meta property="og:description" content="Pesquise imóveis pelo Minha Casa Minha Vida no RS. Encontre apartamentos e casas à venda, filtre por cidade e bairro e simule seu poder de compra pela renda familiar.">
 <meta property="og:url" content="https://mcmv-rs.com.br/">
 <meta property="og:image" content="https://mcmv-rs.com.br/hero-mcmv-rs.png">
-<meta property="og:image:alt" content="Minha Casa Minha Vida RS: portal independente de busca de empreendimentos">
+<meta property="og:image:alt" content="Minha Casa Minha Vida RS: portal de busca, encontre seu MCMV no RS agora!">
 <!-- Favicon principal -->
 <link rel="icon" type="image/png" sizes="32x32" href="https://mcmv-rs.com.br/icon.jpeg">
 <!-- Ícone para dispositivos Apple -->
@@ -308,7 +308,7 @@ html{scroll-padding-top:92px}body{font-family:system-ui,-apple-system,"Segoe UI"
 <main class="wrap" id="portal">
 <section class="hero" aria-labelledby="heroTitle"><div class="heroContent"><div class="eyebrow">PORTAL Minha Casa Minha Vida - RS</div><h1 id="heroTitle">Minha Casa<br>Minha Vida <span>RS</span></h1><p>Encontre empreendimentos no Rio Grande do Sul. Pesquise por cidade, bairro e conheça as opções para conquistar seu imóvel.</p><a class="heroLink" href="#busca">Ver empreendimentos <span aria-hidden="true">→</span></a></div></section>
 <section class="simBox" id="simulator"><div class="eyebrow">ENCONTRE SEU IMÓVEL</div><h2>Como deseja pesquisar?</h2><p>Simule seu poder de compra pela renda <strong>ou</strong> busque diretamente por cidade, bairro e endereço.</p><div aria-label="Tipo de busca" class="simActions" role="group"><button id="modeIncome" type="button">Simular pela renda</button><button class="secondary" id="modePlace" type="button">Buscar por localização</button></div><div id="incomePanel"><div class="simGrid" style="grid-template-columns:minmax(220px,440px)"><div><label for="income">Renda familiar mensal (R$)</label><input id="income" inputmode="decimal" min="1" step="0.01" type="number" value="5000"/></div></div><div class="simActions"><button id="runSim" type="button">Simular e filtrar imóveis</button><button class="secondary" id="clearSim" type="button">Limpar simulação</button></div><div aria-live="polite" class="simResult" id="simResult">Informe sua renda para estimar o valor financiável e filtrar a vitrine.</div></div><div hidden="" id="placePanel"><p>Use os filtros logo abaixo para pesquisar por endereço, cidade, bairro e situação do empreendimento.</p><button id="focusPlace" type="button">Pesquisar por localização ↓</button></div></section><section aria-labelledby="filterTitle" class="filters" id="busca">
-<div class="eyebrow" id="filterTitle" style="margin-bottom:12px">Encontre o empreendimento ideal</div>
+<div class="eyebrow" id="filterTitle" style="margin-bottom:12px">Encontre o imóvel ideal</div>
 <div class="filtergrid">
 <div><label for="regionFilter">Região</label><select id="regionFilter"><option value="">Todas as regiões</option></select></div><div><label for="search">Buscar empreendimento, bairro ou cidade</label><div class="searchwrap"><svg fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg><input id="search" placeholder="Ex.: Canoas, Centro, sacada..." type="search"/></div></div>
 <div><label for="cityFilter">Cidade</label><select id="cityFilter"><option value="">Todas as cidades</option></select></div>
@@ -317,9 +317,9 @@ html{scroll-padding-top:92px}body{font-family:system-ui,-apple-system,"Segoe UI"
 </div>
 <div class="filtertail"><p aria-live="polite" id="resultsCount" role="status">Carregando empreendimentos...</p><button class="secondary" id="resetFilters" type="button">Limpar filtros</button></div>
 </section>
-<div class="listingheader" id="empreendimentos"><div><div class="eyebrow">NOSSA VITRINE</div><h2>Empreendimentos disponíveis</h2></div></div>
+<div class="listingheader" id="empreendimentos"><div><div class="eyebrow">NOSSA VITRINE</div><h2>Imóveis disponíveis</h2></div></div>
 <div aria-live="off" class="tiles" id="tiles"></div>
-<section class="about" id="sobre"><div><span class="eyebrow">Sobre o portal</span><h2>Informação para escolher com mais segurança.</h2></div><p>Uma vitrine imobiliária independente para facilitar a descoberta de empreendimentos, reunir informações relevantes e ajudar você a comparar possibilidades em diferentes regiões.</p></section><footer class="siteFooter"><div><strong>MCMV<span>RS</span></strong><p class="footnote">PORTAL Minha Casa Minha Vida - RS, sem vínculo institucional com a Caixa ou órgãos governamentais. Resultados financeiros são apenas estimativas.</p></div><a href="#portal">Voltar ao início ↑</a></footer>
+<section class="about" id="sobre"><div><span class="eyebrow">Sobre o portal</span><h2>Informação para escolher com mais segurança.</h2></div><p>Uma vitrine para você encontrar o seu imóvel ideal, apartamentos, casas, empreendimentos que atendem o que você precisa. Informações relevantes para ajudar a concretizar o sonho da casa em diferentes regiões.</p></section><footer class="siteFooter"><div><strong>MCMV<span>RS</span></strong><p class="footnote">PORTAL Minha Casa Minha Vida - RS, sem vínculo institucional com a Caixa ou órgãos governamentais. Resultados financeiros são apenas estimativas.</p></div><a href="#portal">Voltar ao início ↑</a></footer>
 </main>
 <script src="config.js"></script><script src="app.js"></script></body>
 </html>
