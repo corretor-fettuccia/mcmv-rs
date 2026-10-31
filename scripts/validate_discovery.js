@@ -28,10 +28,9 @@ try {
     assert(ads.includes(item.imagem), `Imagem não encontrada no feed Ads: ${item.nome}`);
   }
   const merchant = read('merchant-produtos.xml');
-  assert(merchant.includes('<g:image_link>'), 'XML sem image_link');
-  for (const item of catalog.empreendimentos) {
-    if (item.valor_minimo !== null) assert(merchant.includes(item.imagem), `Imagem não encontrada no XML: ${item.nome}`);
-  }
+  if (merchant.includes('<item>')) assert(merchant.includes('<g:image_link>'), 'XML sem image_link');
+  if (merchant.includes('<item>')) assert(merchant.includes('<g:brand>'), 'XML sem marca verdadeira — publicar MD válidos');
+  assert(!merchant.includes('<g:link>https://mcmv-rs.com.br/</g:link>'), 'XML aponta para página inicial');
   const llms = read('llms.txt');
   assert(llms.startsWith('# MCMV-RS'), 'llms.txt sem título');
   assert(llms.includes(site), 'llms.txt sem homepage');

@@ -251,6 +251,7 @@ def write_if_changed(filename, content):
 
 
 def main():
+    from merchant_v4 import build as build_merchant_v4
     entries = normalize(load_payload())
     print('Empreendimentos:', len(entries))
     results = {
@@ -259,10 +260,11 @@ def main():
         'catalogo.json': make_catalog(entries),
         'robots.txt': make_robots((ROOT / 'robots.txt').read_bytes() if (ROOT / 'robots.txt').exists() else None),
         'google-ads-imoveis.csv': make_ads_feed(entries),
-        'merchant-produtos.xml': make_merchant_feed(entries)
+        'merchant-produtos.xml': build_merchant_v4(entries, ROOT / 'merchant-produtos.xml')
     }
     for name, data in results.items():
-        write_if_changed(name, data)
+        if data is not None:
+            write_if_changed(name, data)
 
 
 if __name__ == '__main__':
