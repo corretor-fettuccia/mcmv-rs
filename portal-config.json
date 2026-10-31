@@ -1,0 +1,8 @@
+{
+  "name": "MCMV-RS",
+  "site_url": "https://mcmv-rs.com.br/",
+  "segment": "MCMV",
+  "sync_schedule_utc": "07:17",
+  "source": "Google Sheets via API pública do Apps Script",
+  "notes": "Cada nova instalação deve configurar domínio, Apps Script e planilha próprios."
+}

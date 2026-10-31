@@ -2,6 +2,7 @@
     'use strict';
     const $ = id => document.getElementById(id);
     let items = [];
+    const selectedAttributes=new Set();
     const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     const money = n => Number(n).toLocaleString('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0});
     const clean = s => String(s??'').trim();
@@ -47,7 +48,7 @@
       const pin=campanha && x.campaign==='SELO'?'<span class="campaignPin">'+esc(x.campaignText||'CONDIÇÃO ESPECIAL')+'</span>':'';
       const banner=campanha && x.campaign==='BANNER'?'<div class="campaignBanner">'+esc(x.campaignText||'Condição especial')+'</div>':'';
       const img=validUrl(x.image)?'<img src="'+esc(x.image)+'" loading="lazy" alt="Empreendimento '+esc(x.name)+'" onerror="this.style.display=\'none\'">':artSvg(i);
-      return '<article class="card"><div class="cardmedia">'+img+'<span class="badge">'+esc(x.state)+'</span>'+pin+'</div><div class="cardbody"><h3>'+esc(x.name)+'</h3><div class="location">'+locationSvg+'<span>'+esc([x.neighborhood,x.city].filter(Boolean).join(' · '))+'</span></div>'+banner+'<p class="detail">'+esc(x.highlight)+'</p><div class="divider"><div class="price"><small>FAIXA DE VALORES</small>'+esc(labelPrice(x.minimum,x.maximum))+'</div><a class="cardbtn" href="'+esc(validUrl(x.url)?x.url:'#')+'" target="_blank" rel="noopener noreferrer">Conhecer →</a></div></div></article>';
+      return '<article class="card"><div class="cardmedia">'+img+'<span class="badge">'+esc(x.state)+'</span>'+pin+'</div><div class="cardbody"><h3>'+esc(x.name)+'</h3><div class="location">'+locationSvg+'<span>'+esc([x.neighborhood,x.city].filter(Boolean).join(' · '))+'</span></div>'+banner+'<p class="detail">'+esc(x.highlight)+'</p><div class="divider"><div class="price"><small>FAIXA DE VALORES</small>'+esc(labelPrice(x.minimum,x.maximum))+'</div><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><a class="cardbtn" href="'+esc(validUrl(x.pageUrl)?x.pageUrl:'#')+'">Detalhes →</a><a style="font-size:12px;color:#17647d;font-weight:700" href="'+esc(validUrl(x.url)?x.url:'#')+'" target="_blank" rel="noopener noreferrer">Landing page</a></div></div></div></article>';
     }
     function updateSelect(el,values,blank){
       const old=el.value;
@@ -61,14 +62,30 @@
       updateSelect($('cityFilter'),items.filter(x=>!region||x.region===region).map(x=>x.city),'Todas as cidades');
       updateSelect($('neighborhoodFilter'),items.filter(x=>(!region||x.region===region)&&(!city||x.city===city)).map(x=>x.neighborhood),'Todos os bairros');
     }
+    function refreshAttributes(){
+      const host=$('attributeFilters');if(!host)return;
+      const choices=[...new Set(items.flatMap(x=>Array.isArray(x.attributes)?x.attributes:[]))]
+        .filter(Boolean).sort((a,b)=>a.localeCompare(b,'pt-BR'));
+      host.replaceChildren();
+      for(const name of choices){
+        const id='attr-'+host.childElementCount;
+        const label=document.createElement('label');label.setAttribute('for',id);
+        label.style.cssText='display:inline-flex;align-items:center;gap:7px;margin:4px 10px 4px 0;font-size:13px;cursor:pointer';
+        const input=document.createElement('input');input.type='checkbox';input.id=id;
+        input.checked=selectedAttributes.has(normalize(name));input.style.cssText='width:16px;height:16px;min-height:16px';
+        input.addEventListener('change',()=>{const key=normalize(name);if(input.checked)selectedAttributes.add(key);else selectedAttributes.delete(key);refreshTiles();});
+        label.append(input,document.createTextNode(name));host.append(label);
+      }
+      $('attributeArea').hidden=!choices.length;
+    }
     function refreshTiles(){
       if(!portalConfig)return;
       const all=items;
       const keys=normalize($('search').value).split(/\s+/).filter(Boolean);
       const region=$('regionFilter').value,city=$('cityFilter').value,neigh=$('neighborhoodFilter').value,st=$('stateFilter').value;
       let filtered=all.filter(x=>{
-        const words=normalize([x.name,x.region,x.city,x.neighborhood,x.address,x.highlight,x.state].join(' '));
-        return (!region||x.region===region)&&(!city||x.city===city)&&(!neigh||x.neighborhood===neigh)&&(!st||x.state===st)&&keys.every(k=>words.includes(k));
+        const words=normalize([x.name,x.region,x.city,x.neighborhood,x.address,x.highlight,x.description,x.state,...(x.attributes||[])].join(' '));
+        return (!region||x.region===region)&&(!city||x.city===city)&&(!neigh||x.neighborhood===neigh)&&(!st||x.state===st)&&keys.every(k=>words.includes(k))&&[...selectedAttributes].every(a=>(x.attributes||[]).some(value=>normalize(value)===a));
       });
       if(financial) filtered=filtered.filter(x=>compatibility(x).matched);
       $('resultsCount').textContent=filtered.length+' '+(filtered.length===1?'empreendimento encontrado':'empreendimentos encontrados');
@@ -94,7 +111,7 @@
         $('incomePanel').hidden=true;
         financial=null;
       }
-      refreshOptions();refreshTiles();
+      refreshOptions();updateSelect($('stateFilter'),items.map(x=>x.state),'Todas as situações');refreshAttributes();refreshTiles();
     }
     $('search').addEventListener('input',refreshTiles);
     $('regionFilter').addEventListener('change',()=>{$('cityFilter').value='';$('neighborhoodFilter').value='';refreshOptions();refreshTiles();});
@@ -103,7 +120,7 @@
     $('stateFilter').addEventListener('change',refreshTiles);
     $('resetFilters').addEventListener('click',()=>{
       for(const id of ['search','regionFilter','cityFilter','neighborhoodFilter','stateFilter'])$(id).value='';
-      financial=null;refreshOptions();refreshTiles();
+      financial=null;selectedAttributes.clear();refreshAttributes();refreshOptions();refreshTiles();
     });
     $('modeIncome').addEventListener('click',()=>renderMode('income'));
     $('modePlace').addEventListener('click',()=>renderMode('place'));
@@ -124,32 +141,16 @@
      * Só usar com API exclusivamente pública e sem dados sensíveis.
      */
     function carregarCatalogo() {
-      const url = String(window.VITRINE_API_URL || '').trim();
-      if (!/^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec(?:\?.*)?$/i.test(url)) {
-        exibirFalha('Configure VITRINE_API_URL em config.js com a URL /exec do Motor A.');
-        return;
-      }
-      const callback='__portalVitrine_'+Date.now()+'_'+Math.floor(Math.random()*100000);
-      const script=document.createElement('script');
-      let concluded=false;
-      let timer;
-      const concluir=()=>{ if(concluded)return false;concluded=true;
-        clearTimeout(timer);delete window[callback];script.remove();return true; };
-      window[callback]=(payload)=>{
-        if(!concluir())return;
-        if(!payload || !payload.ok || !payload.config || !Array.isArray(payload.items)){
-          exibirFalha((payload && payload.error) || 'Resposta inesperada do Motor A.');return;
-        }
-        try { initPortal(payload); } catch(err) {
-          console.error('[Vitrine] Falha ao processar dados do Motor A:', err);
-          exibirFalha('A API respondeu, mas ocorreu um erro ao processar o catálogo. Consulte o console do navegador.');
-        }
-      };
-      script.onerror=()=>{if(concluir())exibirFalha('Não foi possível carregar a API pública. Verifique a implantação, o acesso e a resposta JSONP do Motor A.');};
-      timer=setTimeout(()=>{if(concluir())exibirFalha('A consulta demorou demais. Verifique a conexão ou a URL /exec.');},18000);
-      const separator=url.includes('?')?'&':'?';
-      script.src=url+separator+'callback='+encodeURIComponent(callback);
-      document.head.appendChild(script);
+      const url = './catalogo.json';
+      // V4: visitantes NÃO acessam o Apps Script; lêem apenas o arquivo estático.
+      fetch(url,{cache:'no-cache'}).then(resp=>{
+        if(!resp.ok)throw new Error('HTTP '+resp.status);
+        return resp.json();
+      }).then(cat=>{
+        if(!cat||cat.schemaVersion!==4||!Array.isArray(cat.items)||!cat.config)
+          throw new Error('Catálogo V4 indisponível ou ainda não sincronizado');
+        initPortal({config:cat.config,items:cat.items});
+      }).catch(err=>{console.error('Falha catálogo:',err);exibirFalha('Catálogo indisponível. Verifique a última sincronização diária.');});
     }
     function exibirFalha(msg){
       $('resultsCount').textContent='Catálogo indisponível';
