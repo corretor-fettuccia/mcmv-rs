@@ -136,21 +136,68 @@
     $('clearSim').addEventListener('click',()=>{financial=null;$('simResult').textContent='Informe sua renda para filtrar a vitrine.';refreshTiles();});
     $('income').addEventListener('keydown',e=>{if(e.key==='Enter')$('runSim').click();});
     $('tiles').innerHTML='<div class="loader">Carregando empreendimentos cadastrados...</div>';
-    /** Carrega o Motor A via JSONP. Apps Script ContentService redireciona para outra
-     * origem; JSONP permite consultar o endpoint público pelo GitHub Pages sem CORS.
-     * Só usar com API exclusivamente pública e sem dados sensíveis.
+    /**
+     * Core V4.1.3: o navegador consulta SOMENTE o JSON público estático do GitHub Pages.
+     * Compatibilidade de transição: aceita o catálogo V4 e o catálogo V3 da produção.
+     * A API do Apps Script nunca é chamada pelo visitante.
      */
+    function adaptarCatalogo(cat) {
+      if (cat && cat.schemaVersion === 4 && cat.config && Array.isArray(cat.items)) {
+        return {config:cat.config, items:cat.items, formato:'V4'};
+      }
+      if (cat && Array.isArray(cat.empreendimentos)) {
+        const cfg = {
+          titulo:cat.nome || 'Portal Imobiliário',
+          subtitulo:'Encontre empreendimentos compatíveis com seu perfil.',
+          segmento:'MCMV', simuladorAtivo:true, intervaloPercentual:20,
+          fatorRenda:0.3, prazoMeses:420, jurosAno:0.08,
+          faixasRenda:[
+            {id:1,nome:'Faixa 1',ate:3200}, {id:2,nome:'Faixa 2',ate:5000},
+            {id:3,nome:'Faixa 3',ate:9600}, {id:4,nome:'Faixa 4',ate:13000}
+          ]
+        };
+        const mapped=cat.empreendimentos.map(x=>({
+          id:x.id, name:x.nome || '', highlight:x.descricao || '',
+          description:x.descricao_completa || x.descricao || '',
+          url:x.url_empreendimento || '',
+          // Sem HTML individual gerado no legado: detalhes apontam para a LP.
+          pageUrl:x.pageUrl || x.url_empreendimento || '',
+          image:x.imagem || '',
+          gallery:Array.isArray(x.galeria)?x.galeria:[x.imagem].filter(Boolean),
+          attributes:Array.isArray(x.atributos) ? x.atributos
+            : String(x.atributos || '').split(',').map(v=>v.trim()).filter(Boolean),
+          region:x.regiao || '', city:x.cidade || '',
+          neighborhood:x.bairro || '', address:x.endereco || '', uf:x.uf || '',
+          state:x.situacao || '', minimum:x.valor_minimo, maximum:x.valor_maximo,
+          campaign:'NENHUMA', order:0
+        }));
+        return {config:cfg,items:mapped,formato:'V3 (migração pendente)'};
+      }
+      throw new Error('Estrutura inválida: esperado catalogo.json V4 (items/config) ou legado (empreendimentos).');
+    }
     function carregarCatalogo() {
-      const url = './catalogo.json';
-      // V4: visitantes NÃO acessam o Apps Script; lêem apenas o arquivo estático.
-      fetch(url,{cache:'no-cache'}).then(resp=>{
-        if(!resp.ok)throw new Error('HTTP '+resp.status);
-        return resp.json();
-      }).then(cat=>{
-        if(!cat||cat.schemaVersion!==4||!Array.isArray(cat.items)||!cat.config)
-          throw new Error('Catálogo V4 indisponível ou ainda não sincronizado');
-        initPortal({config:cat.config,items:cat.items});
-      }).catch(err=>{console.error('Falha catálogo:',err);exibirFalha('Catálogo indisponível. Verifique a última sincronização diária.');});
+      // O URL é baseado no app.js para funcionar mesmo em GitHub Pages sob subdiretório.
+      const base=document.currentScript && document.currentScript.src
+        ? document.currentScript.src : document.baseURI;
+      const url=new URL('catalogo.json',base);
+      fetch(url.href,{cache:'no-store',headers:{Accept:'application/json'}})
+        .then(async resp=>{
+          if (!resp.ok) throw new Error('HTTP '+resp.status+' em '+url.pathname);
+          const tipo=resp.headers && resp.headers.get ? (resp.headers.get('content-type')||'') : '';
+          if(tipo && !/json|octet-stream|text\/plain/i.test(tipo))
+            throw new Error('A URL '+url.pathname+' não respondeu JSON (Content-Type: '+tipo+').');
+          return resp.json();
+        })
+        .then(cat=>{
+          const payload=adaptarCatalogo(cat);
+          initPortal(payload);
+          console.info('[Core V4.1.3] Vitrine carregada de',url.href,
+            '| formato:',payload.formato,'| imóveis:',payload.items.length);
+        })
+        .catch(err=>{
+          console.error('[Core V4.1.3] Falha ao carregar catalogo.json:',err);
+          exibirFalha('Falha ao carregar catalogo.json ('+err.message+'). Confira a publicação do JSON e o GitHub Actions.');
+        });
     }
     function exibirFalha(msg){
       $('resultsCount').textContent='Catálogo indisponível';
