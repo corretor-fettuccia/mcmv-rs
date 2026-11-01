@@ -1,1 +1,55 @@
-
+{
+  "nome": "MCMV-RS",
+  "tipo": "portal_independente_de_busca_imobiliaria",
+  "descricao": "Portal independente para pesquisar imóveis e empreendimentos no Rio Grande do Sul.",
+  "url_principal": "https://mcmv-rs.com.br/",
+  "url_pesquisa": "https://mcmv-rs.com.br/",
+  "filtros": [
+    "regiao",
+    "cidade",
+    "bairro",
+    "nome_do_empreendimento",
+    "situacao",
+    "renda_familiar"
+  ],
+  "aviso": "Sem vínculo institucional com CAIXA ou Governo Federal. Valores e condições sujeitos a confirmação.",
+  "total_empreendimentos": 2,
+  "empreendimentos": [
+    {
+      "id": "mezzano",
+      "nome": "Mezzano Domingos Martins | Rooftop no Centro de Canoas|MCMV",
+      "descricao": "Parcela R$3.500,00/Mês, torre única com 36 apartamentos de 2 dormitórios, suíte e sacada com churrasqueira. Piscina no rooftop. Minha Casa minha Vida.",
+      "cidade": "Canoas",
+      "bairro": "Centro",
+      "regiao": "Metropolitana RS",
+      "uf": "RS",
+      "endereco": "Rua Domingos Martins, 584, Centro",
+      "situacao": "Em construção",
+      "valor_minimo": 500000,
+      "valor_maximo": 530000,
+      "imagem": "https://mezzano.mcmv-rs.com.br/share.png",
+      "url_empreendimento": "https://mezzano.mcmv-rs.com.br/",
+      "url_busca": "https://mcmv-rs.com.br/"
+    },
+    {
+      "id": "IMB20261031213808214_02858C03",
+      "nome": "LINQ Canoas | 2 Dormitórios | Sacada | Minha Casa Minha Vida",
+      "descricao": "LINQ Your Place no Igara, Canoas: apartamentos de 2 dormitórios, sacada com churrasqueira e lazer. Minha Casa Minha Vida com parcelas na faixa de R$ 2 mil/mês.",
+      "cidade": "Canoas",
+      "bairro": "Marechal Rondon",
+      "regiao": "Metropolitana RS",
+      "uf": "RS",
+      "endereco": "Rua Camboatas, 465, Igara",
+      "situacao": "Em construção",
+      "valor_minimo": 250000,
+      "valor_maximo": 350000,
+      "imagem": "https://linq.mcmv-rs.com.br/share.webp",
+      "url_empreendimento": "https://linq.mcmv-rs.com.br/",
+      "url_busca": "https://mcmv-rs.com.br/"
+    }
+  ],
+  "feeds": {
+    "google_ads_imoveis": "https://mcmv-rs.com.br/google-ads-imoveis.csv",
+    "merchant_formato": "https://mcmv-rs.com.br/merchant-produtos.xml"
+  }
+}
