@@ -1,18 +1,14 @@
 #!/usr/bin/env python3
-"""Interrompe o Core se workflows antigos de publicação continuarem no checkout."""
+"""Valida a presença dos cinco Workflows da V4.2.4 e a ausência de publicadores legados."""
 from pathlib import Path
 import sys
-
-root = Path(__file__).resolve().parent.parent
-p = root / '.github' / 'workflows'
-conflicts = [
-    'sinc-data.yml', 'make-feed-merchantcenter.yml', 'make-sitemap.yml',
-    'make-subpage.yml', 'gerar-indexacao.yml', 'atualizar-sitemap.yml',
-    'gerar-sitemap.yml', 'gerar-llms.yml',
-]
-present = [name for name in conflicts if (p / name).exists()]
-if present:
-    print('::error::Workflows antigos encontrados em .github/workflows/: ' + ', '.join(present))
-    print('Exclua-os no GitHub e mantenha somente core-imobiliario.yml para a geração/publicação.')
+p=Path(__file__).resolve().parent.parent/'.github'/'workflows'
+allowed={'core-imobiliario.yml','sinc-data.yml','make-feed-merchantcenter.yml','make-sitemap.yml','make-subpage.yml'}
+existing={x.name for x in p.glob('*.yml')} | {x.name for x in p.glob('*.yaml')}
+missing=allowed-existing
+unknown=existing-allowed
+if missing or unknown:
+    if missing: print('::error::Workflows obrigatórios ausentes:',', '.join(sorted(missing)))
+    if unknown: print('::error::Exclua workflows antigos/duplicados:',', '.join(sorted(unknown)))
     sys.exit(1)
-print('OK: nenhum workflow legado de geração detectado.')
+print('OK: quatro Workflows independentes e Core; nenhuma rotina legada concorrente.')
