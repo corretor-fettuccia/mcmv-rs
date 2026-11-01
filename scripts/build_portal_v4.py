@@ -66,8 +66,18 @@ def number(value):
 
 
 def attributes(value):
-    if isinstance(value, list): seq = value
-    else: seq = str(value or '').split(',')
+    if isinstance(value, list):
+        seq = value
+    else:
+        raw = str(value or '').strip()
+        if raw.startswith('['):
+            try:
+                parsed=json.loads(raw)
+                seq=parsed if isinstance(parsed,list) else raw.split(',')
+            except ValueError:
+                seq=raw.split(',')
+        else:
+            seq=raw.split(',')
     out, used = [], set()
     for value in seq:
         s = text(value, 120)
@@ -126,7 +136,7 @@ def convert_record(raw, site):
         'name':name,'highlight':highlight,'description':full,
         'descriptionSource':'DESCRICAO_COMPLETA' if description else 'OG_DESCRIPTION (legado)',
         'image':main_image,'gallery':gallery(raw.get('gallery'),main_image),
-        'attributes':attributes(raw.get('attributes')),
+        'attributes':attributes(raw.get('attributes') or raw.get('atributos') or raw.get('ATRIBUTOS') or raw.get('beneficios')),
         'propertyType':text(raw.get('propertyType'),80),'brand':text(raw.get('brand'),140),
         'condition':('used' if text(raw.get('state'),60).casefold()=='usado' else (text(raw.get('condition'),30) or ('new' if text(raw.get('state'),60) in ['Em construção','Pronto para morar'] else ''))),
         'googleEnabled':raw.get('googleEnabled') is True or str(raw.get('googleEnabled','')).upper()=='SIM',
@@ -144,8 +154,14 @@ def convert_record(raw, site):
 
 
 def normalize(payload, site):
+    input_with_attrs=sum(bool(attributes(i.get('attributes') or i.get('atributos') or i.get('ATRIBUTOS') or i.get('beneficios')))
+                         for i in payload['items'] if isinstance(i,dict))
     all_items = [convert_record(i,site) for i in payload['items']]
     all_items = [i for i in all_items if i]
+    output_with_attrs=sum(bool(i['attributes']) for i in all_items)
+    print(f'AUDITORIA ATRIBUTOS: API= {input_with_attrs} imóveis com atributos; catálogo= {output_with_attrs} imóveis com atributos.',flush=True)
+    if input_with_attrs and output_with_attrs==0:
+        raise RuntimeError('A API retornou atributos, mas o catálogo não os recebeu: não publicar snapshot incompleto.')
     # Snapshot completo e vazio é válido (todos imóveis inativados);
     # proteção contra queda abrupta permanece em main().
     identifiers = [i['id'] for i in all_items]

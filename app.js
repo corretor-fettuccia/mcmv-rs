@@ -15,6 +15,7 @@
     function labelPrice(min,max){const a=Number(min)||0,b=Number(max)||0; if(!a&&!b)return'Consulte valores';if(a&&b)return money(a)+' – '+money(b);return a?'A partir de '+money(a):'Até '+money(b);}
     function locationText(x){const s=[clean(x.neighborhood),clean(x.city)].filter(Boolean);return s.length?s.join(' · '):'Cidade e bairro a informar';}
     let portalConfig = null;
+    let portalFormat = null;
     let financial = null;
     function artSvg(index){const colors=[['#cae7dd','#78aca0','#eff9f4'],['#dde0ed','#7f96b1','#f6f6fc'],['#ecddc9','#be9b7a','#faf3e8'],['#c8e4ee','#76a4bb','#effafd'],['#dfd8d4','#a7968b','#fbf5ef']][index%5];const tall=index%3===0;return `<div class="fallbackArtwork" aria-hidden="true"><svg viewBox="0 0 600 370" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="sky${index}" x1="0" y1="0" x2="0" y2="1"><stop stop-color="${colors[0]}"/><stop offset="1" stop-color="${colors[2]}"/></linearGradient><linearGradient id="build${index}" x1="0" y1="0" x2="1" y2="1"><stop stop-color="${colors[2]}"/><stop offset="1" stop-color="${colors[1]}"/></linearGradient></defs><rect width="600" height="370" fill="url(#sky${index})"/><circle cx="490" cy="75" r="44" fill="#fff" opacity=".65"/><path d="M0 300Q175 260 325 297T600 290V370H0Z" fill="${colors[1]}" opacity=".23"/><rect x="155" y="${tall?60:105}" width="260" height="250" fill="url(#build${index})" stroke="#809899" stroke-opacity=".23" stroke-width="2"/><rect x="410" y="140" width="95" height="169" fill="${colors[2]}" stroke="#a6c0bd"/><rect x="124" y="149" width="35" height="161" fill="#94bbb0" opacity=".6"/><path d="M144 ${tall?59:104}h275" stroke="#657d84" stroke-width="8"/><g fill="#537f91">${Array.from({length:4},(_,floor)=>Array.from({length:5},(_,col)=>`<rect x="${174+col*45}" y="${(tall?80:125)+floor*51}" width="29" height="33" rx="1" opacity="${(col+floor)%3===0?'.66':'.82'}"/>`).join('')).join('')}</g><g stroke="#d9e9e5" stroke-width="4">${Array.from({length:5},(_,col)=>`<path d="M${174+col*45+14} ${tall?80:125}v185"/>`).join('')}</g><g fill="#618a7e"><path d="M47 305v-90" stroke="#668174" stroke-width="7"/><circle cx="47" cy="220" r="40"/><circle cx="78" cy="248" r="27"/><path d="M551 306v-72" stroke="#668174" stroke-width="6"/><circle cx="551" cy="232" r="42"/></g><rect y="310" width="600" height="60" fill="#e9e5de" opacity=".65"/><path d="M0 315h600" stroke="#fff" stroke-width="3"/></svg></div>`;}
 
@@ -72,7 +73,16 @@
       updateSelect($('neighborhoodFilter'),items.filter(x=>(!region||x.region===region)&&(!city||x.city===city)).map(x=>x.neighborhood),'Todos os bairros');
     }
     function attributeList(raw){
-      const values=Array.isArray(raw)?raw:String(raw||'').split(',');
+      // Aceita array ou coluna da planilha separada por vírgulas. Suporta arrays JSON serializados.
+      let values=[];
+      if(Array.isArray(raw)) values=raw;
+      else if(typeof raw==='string'){
+        const val=raw.trim();
+        if(val.startsWith('[')){
+          try{const decoded=JSON.parse(val);values=Array.isArray(decoded)?decoded:val.split(',');}
+          catch{values=val.split(',');}
+        }else values=val.split(',');
+      }
       const seen=new Set();
       return values.map(clean).filter(value=>{
         const key=normalize(value);
@@ -80,12 +90,16 @@
         seen.add(key);return true;
       });
     }
+    function itemAttributes(x){
+      const a=attributeList(x.attributes);
+      return a.length?a:attributeList(x.atributos??x.beneficios??'');
+    }
     function refreshAttributes(){
       const host=$('attributeFilters');if(!host)return;
       const counts=new Map();
       // Apenas atributos que existem efetivamente nos imóveis publicados.
       for(const item of items){
-        for(const value of attributeList(item.attributes)){
+        for(const value of itemAttributes(item)){
           const key=normalize(value);
           const found=counts.get(key);
           if(found)found.count++;
@@ -98,7 +112,7 @@
       host.replaceChildren();
       if(!choices.length){
         const info=document.createElement('p');info.className='attributeEmpty';
-        info.textContent='Nenhuma característica cadastrada nos imóveis publicados.';
+        info.textContent='0 atributos no catálogo publicado. Os filtros surgem quando a coluna ATRIBUTOS tiver valores nos imóveis ativos e a sincronização do Git for executada.';
         host.append(info);
       }else{
         for(const [key,feature] of choices){
@@ -117,9 +131,13 @@
       }
       // O bloco permanece visível mesmo sem dados: nunca esconder silenciosamente o filtro.
       $('attributeArea').hidden=false;
+      const diag=$('attributeDiagnostic');
+      if(diag){
+        diag.textContent='Catálogo '+(portalFormat||'?')+' • '+items.length+' imóveis • '+choices.length+' atributos filtráveis • Core 4.1.5';
+      }
       $('attributeHelp').textContent=choices.length
         ?'Selecione uma ou mais características. Os resultados devem atender a todas.'
-        :'As opções serão exibidas quando os imóveis tiverem atributos cadastrados.';
+        :'Sem atributos no JSON. Verifique a coluna ATRIBUTOS, a API pública e a última sincronização.';
     }
     function refreshTiles(){
       if(!portalConfig)return;
@@ -127,8 +145,8 @@
       const keys=normalize($('search').value).split(/\s+/).filter(Boolean);
       const region=$('regionFilter').value,city=$('cityFilter').value,neigh=$('neighborhoodFilter').value,st=$('stateFilter').value;
       let filtered=all.filter(x=>{
-        const words=normalize([x.name,x.region,x.city,x.neighborhood,x.address,x.highlight,x.description,x.state,...attributeList(x.attributes)].join(' '));
-        return (!region||x.region===region)&&(!city||x.city===city)&&(!neigh||x.neighborhood===neigh)&&(!st||x.state===st)&&keys.every(k=>words.includes(k))&&[...selectedAttributes].every(a=>attributeList(x.attributes).some(value=>normalize(value)===a));
+        const words=normalize([x.name,x.region,x.city,x.neighborhood,x.address,x.highlight,x.description,x.state,...itemAttributes(x)].join(' '));
+        return (!region||x.region===region)&&(!city||x.city===city)&&(!neigh||x.neighborhood===neigh)&&(!st||x.state===st)&&keys.every(k=>words.includes(k))&&[...selectedAttributes].every(a=>itemAttributes(x).some(value=>normalize(value)===a));
       });
       if(financial) filtered=filtered.filter(x=>compatibility(x).matched);
       $('resultsCount').textContent=filtered.length+' '+(filtered.length===1?'empreendimento encontrado':'empreendimentos encontrados');
@@ -143,7 +161,7 @@
       refreshTiles();
     }
     function initPortal(payload){
-      portalConfig=payload.config;items=payload.items||[];
+      portalConfig=payload.config;items=payload.items||[];portalFormat=payload.formato||"V4";
       // Preserva o titulo SEO e o hero institucional definidos no HTML.
       // Os dados do Motor A alimentam o catalogo e os filtros.
       // Identidade institucional fixa; título do catálogo exibido no hero.
@@ -180,7 +198,7 @@
     $('income').addEventListener('keydown',e=>{if(e.key==='Enter')$('runSim').click();});
     $('tiles').innerHTML='<div class="loader">Carregando empreendimentos cadastrados...</div>';
     /**
-     * Core V4.1.4: o navegador consulta SOMENTE o JSON público estático do GitHub Pages.
+     * Core V4.1.5: o navegador consulta SOMENTE o JSON público estático do GitHub Pages.
      * Compatibilidade de transição: aceita o catálogo V4 e o catálogo V3 da produção.
      * A API do Apps Script nunca é chamada pelo visitante.
      */
@@ -233,11 +251,12 @@
         .then(cat=>{
           const payload=adaptarCatalogo(cat);
           initPortal(payload);
-          console.info('[Core V4.1.4] Vitrine carregada de',url.href,
+          console.info('[Core V4.1.5] Vitrine carregada de',url.href,
             '| formato:',payload.formato,'| imóveis:',payload.items.length);
         })
         .catch(err=>{
-          console.error('[Core V4.1.4] Falha ao carregar catalogo.json:',err);
+          console.error('[Core V4.1.5] Falha ao carregar catalogo.json:',err);
+          const diag=$('attributeDiagnostic');if(diag)diag.textContent='Erro ao ler o catálogo: '+err.message;
           exibirFalha('Falha ao carregar catalogo.json ('+err.message+'). Confira a publicação do JSON e o GitHub Actions.');
         });
     }

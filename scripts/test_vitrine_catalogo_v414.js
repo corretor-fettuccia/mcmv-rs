@@ -78,10 +78,10 @@ async function run(data,status=200){
   const actual=JSON.parse(fs.readFileSync(path.join(root,'catalogo.json'),'utf8'));
   const c=await run(actual);
   assert.equal(c.get('attributeArea').hidden,false);
-  assert.match(c.get('attributeFilters').children[0].textContent,/Nenhuma característica cadastrada/);
+  assert.match(c.get('attributeFilters').children[0].textContent,/0 atributos no catálogo publicado/);
   assert(!c.get('tiles').innerHTML.includes('Landing page'));
 
   const d=await run({},404);
   assert.match(d.get('tiles').children[0].textContent,/HTTP 404/);
-  console.log('OK V4.1.4: CTAs internos, filtros visíveis, composição por atributos, contagens, legado, catálogo sem atributos, HTTP 404.');
+  console.log('OK V4.1.5: CTAs internos, filtros visíveis, composição por atributos, contagens, legado, catálogo sem atributos, HTTP 404.');
 })().catch(e=>{console.error(e);process.exitCode=1});

@@ -8,6 +8,14 @@ assert cat['total_empreendimentos']==len(items)
 assert items or cat.get('snapshotComplete') is True, 'Catálogo vazio sem confirmação' 
 assert len({i['id'] for i in items})==len(items)
 assert cat['schemaVersion']==4
+found=sorted({a for i in items for a in i.get('attributes',[])},key=str.casefold)
+assert cat.get('filtros',{}).get('atributos')==found, 'Filtros divergentes dos atributos dos imóveis'
+idx=(root/'index.html').read_text(encoding='utf-8')
+app=(root/'app.js').read_text(encoding='utf-8')
+assert 'id="attributeArea"' in idx and 'id="attributeFilters"' in idx, 'Filtro ausente no HTML da vitrine'
+assert 'app.js?v=4.1.5' in idx and 'function refreshAttributes()' in app, 'Versão do JavaScript da vitrine incompatível'
+if not found:
+    print('AVISO: catálogo publicado não contém atributos. A seção deve indicar 0 até os imóveis serem atualizados.')
 links=set()
 for x in items:
     assert x['id'] and x['name'] and x['description'] and x['image']
