@@ -203,7 +203,7 @@ dl{{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:18
 <section class="panel"><h2>Características do imóvel</h2><dl>{stats}</dl>
 <h2>Benefícios e diferenciais</h2><ul>{features or '<li>Características a confirmar</li>'}</ul></section>
 <section class="panel"><h2>Descrição completa</h2><div class="description">{h(i['description'])}</div></section>
-<section class="panel"><h2>{h(price)}</h2><p>{h(location)}</p><div class="actions"><a class="button" href="{h(i['url'])}" target="_blank" rel="noopener noreferrer">Acessar landing page / contatar vendas</a><a class="button secondary" href="{h(site)}">Voltar ao catálogo</a></div>
+<section class="panel"><h2>{h(price)}</h2><p>{h(location)}</p><div class="actions"><a class="button" href="{h(i['url'])}" target="_blank" rel="noopener noreferrer">Conhecer o empreendimento</a><a class="button secondary" href="{h(site)}">Voltar ao catálogo</a></div>
 <p class="muted">Preços, imagens, condições e disponibilidade devem ser confirmados com o anunciante.</p></section></main></body></html>'''
 
 

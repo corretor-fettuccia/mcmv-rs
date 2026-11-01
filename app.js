@@ -1,6 +1,9 @@
 
     'use strict';
     const $ = id => document.getElementById(id);
+    // Captura a base durante a avaliação do script (currentScript será null após fetch).
+    const catalogRoot=new URL('.',document.currentScript && document.currentScript.src
+      ? document.currentScript.src : document.baseURI);
     let items = [];
     const selectedAttributes=new Set();
     const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -48,7 +51,13 @@
       const pin=campanha && x.campaign==='SELO'?'<span class="campaignPin">'+esc(x.campaignText||'CONDIÇÃO ESPECIAL')+'</span>':'';
       const banner=campanha && x.campaign==='BANNER'?'<div class="campaignBanner">'+esc(x.campaignText||'Condição especial')+'</div>':'';
       const img=validUrl(x.image)?'<img src="'+esc(x.image)+'" loading="lazy" alt="Empreendimento '+esc(x.name)+'" onerror="this.style.display=\'none\'">':artSvg(i);
-      return '<article class="card"><div class="cardmedia">'+img+'<span class="badge">'+esc(x.state)+'</span>'+pin+'</div><div class="cardbody"><h3>'+esc(x.name)+'</h3><div class="location">'+locationSvg+'<span>'+esc([x.neighborhood,x.city].filter(Boolean).join(' · '))+'</span></div>'+banner+'<p class="detail">'+esc(x.highlight)+'</p><div class="divider"><div class="price"><small>FAIXA DE VALORES</small>'+esc(labelPrice(x.minimum,x.maximum))+'</div><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><a class="cardbtn" href="'+esc(validUrl(x.pageUrl)?x.pageUrl:'#')+'">Detalhes →</a><a style="font-size:12px;color:#17647d;font-weight:700" href="'+esc(validUrl(x.url)?x.url:'#')+'" target="_blank" rel="noopener noreferrer">Landing page</a></div></div></div></article>';
+      // Na vitrine, o único destino é a página de detalhes do próprio portal.
+      // A URL comercial da landing page pertence exclusivamente à página individual.
+      const href=validUrl(x.pageUrl)?x.pageUrl:'';
+      const action=href
+        ?'<a class="cardbtn" href="'+esc(href)+'" aria-label="Ver detalhes de '+esc(x.name)+'">Ver detalhes →</a>'
+        :'<span class="cardbtn is-disabled" aria-disabled="true">Detalhes indisponíveis</span>';
+      return '<article class="card"><div class="cardmedia">'+img+'<span class="badge">'+esc(x.state)+'</span>'+pin+'</div><div class="cardbody"><h3>'+esc(x.name)+'</h3><div class="location">'+locationSvg+'<span>'+esc([x.neighborhood,x.city].filter(Boolean).join(' · '))+'</span></div>'+banner+'<p class="detail">'+esc(x.highlight)+'</p><div class="divider"><div class="price"><small>FAIXA DE VALORES</small>'+esc(labelPrice(x.minimum,x.maximum))+'</div>'+action+'</div></div></article>';
     }
     function updateSelect(el,values,blank){
       const old=el.value;
@@ -62,21 +71,55 @@
       updateSelect($('cityFilter'),items.filter(x=>!region||x.region===region).map(x=>x.city),'Todas as cidades');
       updateSelect($('neighborhoodFilter'),items.filter(x=>(!region||x.region===region)&&(!city||x.city===city)).map(x=>x.neighborhood),'Todos os bairros');
     }
+    function attributeList(raw){
+      const values=Array.isArray(raw)?raw:String(raw||'').split(',');
+      const seen=new Set();
+      return values.map(clean).filter(value=>{
+        const key=normalize(value);
+        if(!key||seen.has(key))return false;
+        seen.add(key);return true;
+      });
+    }
     function refreshAttributes(){
       const host=$('attributeFilters');if(!host)return;
-      const choices=[...new Set(items.flatMap(x=>Array.isArray(x.attributes)?x.attributes:[]))]
-        .filter(Boolean).sort((a,b)=>a.localeCompare(b,'pt-BR'));
-      host.replaceChildren();
-      for(const name of choices){
-        const id='attr-'+host.childElementCount;
-        const label=document.createElement('label');label.setAttribute('for',id);
-        label.style.cssText='display:inline-flex;align-items:center;gap:7px;margin:4px 10px 4px 0;font-size:13px;cursor:pointer';
-        const input=document.createElement('input');input.type='checkbox';input.id=id;
-        input.checked=selectedAttributes.has(normalize(name));input.style.cssText='width:16px;height:16px;min-height:16px';
-        input.addEventListener('change',()=>{const key=normalize(name);if(input.checked)selectedAttributes.add(key);else selectedAttributes.delete(key);refreshTiles();});
-        label.append(input,document.createTextNode(name));host.append(label);
+      const counts=new Map();
+      // Apenas atributos que existem efetivamente nos imóveis publicados.
+      for(const item of items){
+        for(const value of attributeList(item.attributes)){
+          const key=normalize(value);
+          const found=counts.get(key);
+          if(found)found.count++;
+          else counts.set(key,{name:value,count:1});
+        }
       }
-      $('attributeArea').hidden=!choices.length;
+      const choices=[...counts.entries()].sort((a,b)=>a[1].name.localeCompare(b[1].name,'pt-BR'));
+      // Um atributo retirado do catálogo deixa de influenciar a filtragem.
+      for(const key of selectedAttributes){if(!counts.has(key))selectedAttributes.delete(key);}
+      host.replaceChildren();
+      if(!choices.length){
+        const info=document.createElement('p');info.className='attributeEmpty';
+        info.textContent='Nenhuma característica cadastrada nos imóveis publicados.';
+        host.append(info);
+      }else{
+        for(const [key,feature] of choices){
+          const id='attr-'+host.childElementCount;
+          const label=document.createElement('label');label.className='attributeChoice';label.setAttribute('for',id);
+          const input=document.createElement('input');input.type='checkbox';input.id=id;
+          input.checked=selectedAttributes.has(key);
+          input.addEventListener('change',()=>{
+            if(input.checked)selectedAttributes.add(key);else selectedAttributes.delete(key);
+            refreshTiles();
+          });
+          const name=document.createElement('span');name.textContent=feature.name;
+          const count=document.createElement('span');count.className='attributeCount';count.textContent=String(feature.count);
+          label.append(input,name,count);host.append(label);
+        }
+      }
+      // O bloco permanece visível mesmo sem dados: nunca esconder silenciosamente o filtro.
+      $('attributeArea').hidden=false;
+      $('attributeHelp').textContent=choices.length
+        ?'Selecione uma ou mais características. Os resultados devem atender a todas.'
+        :'As opções serão exibidas quando os imóveis tiverem atributos cadastrados.';
     }
     function refreshTiles(){
       if(!portalConfig)return;
@@ -84,8 +127,8 @@
       const keys=normalize($('search').value).split(/\s+/).filter(Boolean);
       const region=$('regionFilter').value,city=$('cityFilter').value,neigh=$('neighborhoodFilter').value,st=$('stateFilter').value;
       let filtered=all.filter(x=>{
-        const words=normalize([x.name,x.region,x.city,x.neighborhood,x.address,x.highlight,x.description,x.state,...(x.attributes||[])].join(' '));
-        return (!region||x.region===region)&&(!city||x.city===city)&&(!neigh||x.neighborhood===neigh)&&(!st||x.state===st)&&keys.every(k=>words.includes(k))&&[...selectedAttributes].every(a=>(x.attributes||[]).some(value=>normalize(value)===a));
+        const words=normalize([x.name,x.region,x.city,x.neighborhood,x.address,x.highlight,x.description,x.state,...attributeList(x.attributes)].join(' '));
+        return (!region||x.region===region)&&(!city||x.city===city)&&(!neigh||x.neighborhood===neigh)&&(!st||x.state===st)&&keys.every(k=>words.includes(k))&&[...selectedAttributes].every(a=>attributeList(x.attributes).some(value=>normalize(value)===a));
       });
       if(financial) filtered=filtered.filter(x=>compatibility(x).matched);
       $('resultsCount').textContent=filtered.length+' '+(filtered.length===1?'empreendimento encontrado':'empreendimentos encontrados');
@@ -137,7 +180,7 @@
     $('income').addEventListener('keydown',e=>{if(e.key==='Enter')$('runSim').click();});
     $('tiles').innerHTML='<div class="loader">Carregando empreendimentos cadastrados...</div>';
     /**
-     * Core V4.1.3: o navegador consulta SOMENTE o JSON público estático do GitHub Pages.
+     * Core V4.1.4: o navegador consulta SOMENTE o JSON público estático do GitHub Pages.
      * Compatibilidade de transição: aceita o catálogo V4 e o catálogo V3 da produção.
      * A API do Apps Script nunca é chamada pelo visitante.
      */
@@ -160,8 +203,9 @@
           id:x.id, name:x.nome || '', highlight:x.descricao || '',
           description:x.descricao_completa || x.descricao || '',
           url:x.url_empreendimento || '',
-          // Sem HTML individual gerado no legado: detalhes apontam para a LP.
-          pageUrl:x.pageUrl || x.url_empreendimento || '',
+          // URLs de detalhes pertencem sempre ao portal; nunca apontam à landing page externa.
+          pageUrl:/^[A-Za-z0-9_-]{2,120}$/.test(String(x.id||''))
+            ? new URL('imoveis/'+encodeURIComponent(x.id)+'/',catalogRoot).href : '',
           image:x.imagem || '',
           gallery:Array.isArray(x.galeria)?x.galeria:[x.imagem].filter(Boolean),
           attributes:Array.isArray(x.atributos) ? x.atributos
@@ -177,9 +221,7 @@
     }
     function carregarCatalogo() {
       // O URL é baseado no app.js para funcionar mesmo em GitHub Pages sob subdiretório.
-      const base=document.currentScript && document.currentScript.src
-        ? document.currentScript.src : document.baseURI;
-      const url=new URL('catalogo.json',base);
+      const url=new URL('catalogo.json',catalogRoot);
       fetch(url.href,{cache:'no-store',headers:{Accept:'application/json'}})
         .then(async resp=>{
           if (!resp.ok) throw new Error('HTTP '+resp.status+' em '+url.pathname);
@@ -191,11 +233,11 @@
         .then(cat=>{
           const payload=adaptarCatalogo(cat);
           initPortal(payload);
-          console.info('[Core V4.1.3] Vitrine carregada de',url.href,
+          console.info('[Core V4.1.4] Vitrine carregada de',url.href,
             '| formato:',payload.formato,'| imóveis:',payload.items.length);
         })
         .catch(err=>{
-          console.error('[Core V4.1.3] Falha ao carregar catalogo.json:',err);
+          console.error('[Core V4.1.4] Falha ao carregar catalogo.json:',err);
           exibirFalha('Falha ao carregar catalogo.json ('+err.message+'). Confira a publicação do JSON e o GitHub Actions.');
         });
     }
