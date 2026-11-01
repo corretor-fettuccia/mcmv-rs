@@ -78,7 +78,17 @@ async function run(data,status=200){
   const actual=JSON.parse(fs.readFileSync(path.join(root,'catalogo.json'),'utf8'));
   const c=await run(actual);
   assert.equal(c.get('attributeArea').hidden,false);
-  const present=new Set((actual.items||[]).flatMap(x=>Array.isArray(x.attributes)?x.attributes:[]));
+  // Compare as MESMAS chaves da vitrine (sem acentos/maiúsculas).
+  // A contagem literal do JSON pode ser maior por grafias equivalentes.
+  const attributeKey = value => String(value??'').trim().normalize('NFD')
+    .replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('pt-BR');
+  const present=new Set((actual.items||[])
+    .flatMap(x=>Array.isArray(x.attributes)?x.attributes:[])
+    .map(attributeKey).filter(Boolean));
+  const available=new Set((actual.atributos_disponiveis||[])
+    .map(attributeKey).filter(Boolean));
+  assert.deepEqual([...available].sort(),[...present].sort(),
+    'Lista pública de atributos deve corresponder aos filtros do catálogo');
   if(present.size) {
     assert.equal(c.get('attributeFilters').children.length,present.size);
   } else {
@@ -86,7 +96,17 @@ async function run(data,status=200){
   }
   assert(!c.get('tiles').innerHTML.includes('Landing page'));
 
+  // Regressão: variantes de acentuação/caixa não podem duplicar filtros.
+  const variants={schemaVersion:4,config:cfg,items:[
+    {...item1,attributes:['Água quente','Sacada']},
+    {...item2,attributes:['agua quente','SACADA']}
+  ]};
+  const e=await run(variants);
+  const variantFilters=e.get('attributeFilters').children;
+  assert.equal(variantFilters.length,2);
+  assert.deepEqual(variantFilters.map(x=>x.children[2].textContent),['2','2']);
+
   const d=await run({},404);
   assert.match(d.get('tiles').children[0].textContent,/HTTP 404/);
-  console.log('OK V4.2.0: CTAs internos, filtros visíveis, composição por atributos, contagens, legado, catálogo sem atributos, HTTP 404.');
+  console.log('OK V4.2.6: CTAs internos, filtros e contagens normalizados, grafias equivalentes, catálogo, HTTP 404.');
 })().catch(e=>{console.error(e);process.exitCode=1});

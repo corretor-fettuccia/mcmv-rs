@@ -11,10 +11,12 @@ import json
 import os
 import re
 import sys
+import unicodedata
 import hashlib
 import xml.etree.ElementTree as ET
 from pathlib import Path
-from urllib.parse import urlsplit
+from urllib.parse import urlsplit, urlunsplit, parse_qsl, urlencode
+from datetime import datetime, timezone
 from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -65,6 +67,31 @@ def number(value):
     except (ValueError, TypeError): return None
 
 
+def attribute_key(value):
+    """Chave igual à da vitrine: sem diferença entre acentos e caixa."""
+    value = text(value, 120)
+    value = unicodedata.normalize('NFD', value)
+    return ''.join(char for char in value if not ('\u0300' <= char <= '\u036f')).lower()
+
+
+def attribute_label(value):
+    """Padroniza exibição: 'PISCINA' -> 'Piscina', '02 dormitórios' -> '02 Dormitórios'.
+
+    Maiúscula inicial refere-se à primeira LETRA, não ao primeiro caractere:
+    números iniciais são preservados. Restante em caixa baixa, sem alterar acentos.
+    """
+    label = unicodedata.normalize('NFC', text(value, 120)).lower()
+    for i, char in enumerate(label):
+        if char.isalpha():
+            return label[:i] + char.upper() + label[i + 1:]
+    return ''
+
+
+def _accent_count(value):
+    """Na variação equivalente, prefere o rótulo com acentuação existente."""
+    return sum(unicodedata.combining(c) for c in unicodedata.normalize('NFD', value))
+
+
 def attributes(value):
     if isinstance(value, list):
         seq = value
@@ -80,8 +107,8 @@ def attributes(value):
             seq=raw.split(',')
     out, used = [], set()
     for value in seq:
-        s = text(value, 120)
-        key = ''.join(c for c in s.casefold() if c.isalnum())
+        s = attribute_label(value)
+        key = attribute_key(s)
         if key and key not in used:out.append(s);used.add(key)
     return out[:100]
 
@@ -104,7 +131,18 @@ def get_payload():
     else:
         uri = os.environ.get('VITRINE_API_URL','').strip()
         if not valid_url(uri): raise RuntimeError('Configure a variável VITRINE_API_URL no GitHub Actions (não publique a URL no JavaScript da vitrine).')
-        with urlopen(Request(uri, headers={'User-Agent': 'CorePortalV4/1.0','Accept':'application/json'}),timeout=45) as response:
+        # A cada execução, consulta a implantação /exec atual e ignora caches HTTP
+        # intermediários. Não depende da versão anterior do catalogo.json.
+        parsed = urlsplit(uri)
+        params = [(k, v) for k, v in parse_qsl(parsed.query, keep_blank_values=True)
+                  if k != '_core_refresh']
+        params.append(('_core_refresh', str(int(datetime.now(timezone.utc).timestamp() * 1000))))
+        fresh_uri = urlunsplit((parsed.scheme, parsed.netloc, parsed.path,
+                               urlencode(params), parsed.fragment))
+        with urlopen(Request(fresh_uri, headers={
+            'User-Agent': 'CorePortalV4/1.0', 'Accept': 'application/json',
+            'Cache-Control': 'no-cache', 'Pragma': 'no-cache',
+        }), timeout=45) as response:
             raw = response.read(8_000_001)
         if len(raw) > 8_000_000: raise RuntimeError('API retornou mais que 8MB')
         data = json.loads(raw.decode('utf-8-sig'))
@@ -168,8 +206,17 @@ def normalize(payload, site):
     print(f'AUDITORIA ATRIBUTOS: API= {input_with_attrs} imóveis com atributos; catálogo= {output_with_attrs} imóveis com atributos.',flush=True)
     if input_with_attrs and output_with_attrs==0:
         raise RuntimeError('A API retornou atributos, mas o catálogo não os recebeu: não publicar snapshot incompleto.')
-    # Snapshot completo e vazio é válido (todos imóveis inativados);
-    # proteção contra queda abrupta permanece em main().
+    # Unifica grafias equivalentes ENTRE imóveis (ex.: 'Agua quente' e
+    # 'Água quente'), preferindo o rótulo acentuado quando disponível.
+    preferred = {}
+    for item in all_items:
+        for attr in item['attributes']:
+            key = attribute_key(attr)
+            if key not in preferred or _accent_count(attr) > _accent_count(preferred[key]):
+                preferred[key] = attr
+    for item in all_items:
+        item['attributes'] = [preferred[attribute_key(attr)] for attr in item['attributes']]
+    # Snapshot completo e vazio é válido (todos imóveis inativados).
     identifiers = [i['id'] for i in all_items]
     if len(set(identifiers)) != len(identifiers): raise RuntimeError('IDs repetidos na API')
     return sorted(all_items,key=lambda i:(i['order'],i['name'].casefold(),i['id']))
@@ -181,7 +228,14 @@ def catalog_json(items, payload, conf):
     A vitrine usa items[].attributes; leitores legados e agentes podem usar
     empreendimentos[].atributos. Ambas vêm do mesmo registro da API V4.
     """
-    available = sorted({attr for item in items for attr in item['attributes']}, key=str.casefold)
+    # O cadastro pode conter grafias distintas para o mesmo benefício.
+    # A vitrine normaliza acentos e maiúsculas: fazer o mesmo aqui evita
+    # 26 nomes no JSON vs. 25 filtros reais e falhas na validação do Pages.
+    by_key = {}
+    for item in items:
+        for attr in item['attributes']:
+            by_key.setdefault(attribute_key(attr), attr)
+    available = sorted(by_key.values(), key=str.casefold)
     legacy = []
     for item in items:
         legacy.append({
@@ -237,10 +291,11 @@ def catalog_json(items, payload, conf):
     }
 
 
-def put(path, data):
+def put(path, data, force=False):
+    """Escrita atômica. force=True recria inclusive um catálogo vazio/antigo."""
     path.parent.mkdir(parents=True,exist_ok=True)
     if isinstance(data,str):data=data.encode('utf-8')
-    if path.exists() and path.read_bytes()==data:return False
+    if not force and path.exists() and path.read_bytes()==data:return False
     tmp=path.with_suffix(path.suffix+'.tmp');tmp.write_bytes(data);tmp.replace(path)
     return True
 

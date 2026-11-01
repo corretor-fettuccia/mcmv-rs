@@ -2,7 +2,7 @@
 """Auditora contrato V4, URLs internas, paginas individuais e feed apos execução."""
 import json, sys
 import xml.etree.ElementTree as ET
-from core_lib import ROOT, settings
+from core_lib import ROOT, settings, attribute_key, attribute_label
 
 def run():
     conf = settings()
@@ -10,6 +10,21 @@ def run():
     items = catalog.get('items')
     if catalog.get('schemaVersion') != 4 or not isinstance(items, list):
         raise ValueError('JSON sem items[] V4')
+    # Contrato único: nomes já vêm normalizados do sincronizador.
+    # Evita novamente 26 rótulos no JSON contra 25 opções na vitrine.
+    keys = set()
+    for item in items:
+        for attr in item.get('attributes', []):
+            if attr != attribute_label(attr):
+                raise ValueError(f'Atributo sem padronização no imóvel {item.get("id")}: {attr}')
+            keys.add(attribute_key(attr))
+    visible = catalog.get('atributos_disponiveis')
+    if not isinstance(visible, list):
+        raise ValueError('Lista atributos_disponiveis ausente')
+    if len(visible) != len(keys) or {attribute_key(a) for a in visible} != keys:
+        raise ValueError('Atributos disponíveis divergem dos filtros efetivos da vitrine')
+    if any(a != attribute_label(a) for a in visible):
+        raise ValueError('Atributos disponíveis sem padronização textual')
     ids = [item['id'] for item in items]
     if len(ids) != len(set(ids)):
         raise ValueError('IDs duplicados no catálogo')
