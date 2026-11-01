@@ -133,7 +133,7 @@
       $('attributeArea').hidden=false;
       const diag=$('attributeDiagnostic');
       if(diag){
-        diag.textContent='Catálogo '+(portalFormat||'?')+' • '+items.length+' imóveis • '+choices.length+' atributos filtráveis • Core 4.1.7';
+        diag.textContent='Catálogo '+(portalFormat||'?')+' • '+items.length+' imóveis • '+choices.length+' atributos filtráveis • Core 4.2.0';
       }
       $('attributeHelp').textContent=choices.length
         ?'Selecione uma ou mais características. Os resultados devem atender a todas.'
@@ -251,11 +251,11 @@
         .then(cat=>{
           const payload=adaptarCatalogo(cat);
           initPortal(payload);
-          console.info('[Core V4.1.7] Vitrine carregada de',url.href,
+          console.info('[Core V4.2.0] Vitrine carregada de',url.href,
             '| formato:',payload.formato,'| imóveis:',payload.items.length);
         })
         .catch(err=>{
-          console.error('[Core V4.1.7] Falha ao carregar catalogo.json:',err);
+          console.error('[Core V4.2.0] Falha ao carregar catalogo.json:',err);
           const diag=$('attributeDiagnostic');if(diag)diag.textContent='Erro ao ler o catálogo: '+err.message;
           exibirFalha('Falha ao carregar catalogo.json ('+err.message+'). Confira a publicação do JSON e o GitHub Actions.');
         });
