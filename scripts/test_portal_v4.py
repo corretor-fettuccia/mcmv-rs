@@ -16,12 +16,12 @@ def run():
         tmp=Path(work)
         shutil.copytree(ROOT,tmp/'site',ignore=shutil.ignore_patterns('.git','__pycache__'))
         site=tmp/'site'
-        sample={'ok':True,'config':{'simuladorAtivo':True,'faixasRenda':[],
+        sample={'ok':True,'schemaVersion':4,'sourceContract':'core-imobiliario-v4','config':{'simuladorAtivo':True,'faixasRenda':[],
            'prazoMeses':420,'fatorRenda':0.30,'jurosAno':0.08,'intervaloPercentual':20},
            'items':[{'id':'TESTE01','name':'Apartamento fictício — somente teste',
             'url':'https://exemplo.com.br/imovel01/','image':'https://exemplo.com.br/foto.webp',
-            'description':'Descrição integral de teste.\nSegundo parágrafo.',
-            'highlight':'Destaque de teste','attributes':'Sacada, Jacuzzi, Sacada',
+            'description':'Descrição integral de teste.\nSegundo parágrafo.', 'state':'Em construção',
+            'highlight':'Destaque de teste','attributes':['Sacada','Jacuzzi'],
             'gallery':['https://exemplo.com.br/foto.webp'],'city':'Canoas',
             'minimum':250000,'brand':'Construtora fictícia para teste','condition':'new',
             'googleEnabled':True,'googleAvailability':'in_stock'}],
@@ -66,6 +66,16 @@ def run():
         fixture.write_text('{"ok":true,"items":[]}',encoding='utf-8')
         assert subprocess.run([sys.executable,str(script)],env=env,capture_output=True).returncode!=0
         assert prior==(site/'catalogo.json').read_bytes()
+        # A API antiga deve ser rejeitada sem modificar o catálogo anterior.
+        sample['items']=[{'id':'TESTE01','name':'Sem atributos','url':'https://exemplo.com.br/imovel01/',
+                           'image':'https://exemplo.com.br/foto.webp'}]
+        sample['publishedRows']=1
+        del sample['schemaVersion']
+        fixture.write_text(json.dumps(sample,ensure_ascii=False),encoding='utf-8')
+        attempt=subprocess.run([sys.executable,str(script)],env=env,capture_output=True,text=True)
+        assert attempt.returncode!=0 and 'CONTRATO ANTIGO' in attempt.stderr,attempt.stderr
+        assert prior==(site/'catalogo.json').read_bytes()
+
         print('TESTES V4.1 PASSARAM (HTML, filtros, Merchant on/off, out_of_stock, desativação, snapshot, falha fechada).')
 
 if __name__=='__main__':run()

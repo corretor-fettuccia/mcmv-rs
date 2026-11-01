@@ -133,7 +133,7 @@
       $('attributeArea').hidden=false;
       const diag=$('attributeDiagnostic');
       if(diag){
-        diag.textContent='Catálogo '+(portalFormat||'?')+' • '+items.length+' imóveis • '+choices.length+' atributos filtráveis • Core 4.1.5';
+        diag.textContent='Catálogo '+(portalFormat||'?')+' • '+items.length+' imóveis • '+choices.length+' atributos filtráveis • Core 4.1.6';
       }
       $('attributeHelp').textContent=choices.length
         ?'Selecione uma ou mais características. Os resultados devem atender a todas.'
@@ -198,7 +198,7 @@
     $('income').addEventListener('keydown',e=>{if(e.key==='Enter')$('runSim').click();});
     $('tiles').innerHTML='<div class="loader">Carregando empreendimentos cadastrados...</div>';
     /**
-     * Core V4.1.5: o navegador consulta SOMENTE o JSON público estático do GitHub Pages.
+     * Core V4.1.6: o navegador consulta SOMENTE o JSON público estático do GitHub Pages.
      * Compatibilidade de transição: aceita o catálogo V4 e o catálogo V3 da produção.
      * A API do Apps Script nunca é chamada pelo visitante.
      */
@@ -251,11 +251,11 @@
         .then(cat=>{
           const payload=adaptarCatalogo(cat);
           initPortal(payload);
-          console.info('[Core V4.1.5] Vitrine carregada de',url.href,
+          console.info('[Core V4.1.6] Vitrine carregada de',url.href,
             '| formato:',payload.formato,'| imóveis:',payload.items.length);
         })
         .catch(err=>{
-          console.error('[Core V4.1.5] Falha ao carregar catalogo.json:',err);
+          console.error('[Core V4.1.6] Falha ao carregar catalogo.json:',err);
           const diag=$('attributeDiagnostic');if(diag)diag.textContent='Erro ao ler o catálogo: '+err.message;
           exibirFalha('Falha ao carregar catalogo.json ('+err.message+'). Confira a publicação do JSON e o GitHub Actions.');
         });

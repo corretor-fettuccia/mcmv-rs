@@ -109,7 +109,14 @@ def get_payload():
         if len(raw) > 8_000_000: raise RuntimeError('API retornou mais que 8MB')
         data = json.loads(raw.decode('utf-8-sig'))
     if not isinstance(data, dict) or data.get('ok') is not True or not isinstance(data.get('items'), list):
-        raise RuntimeError('API inválida: saída anterior preservada')
+        raise RuntimeError('API inválida/legada. Instale a API pública V4.1.6 e configure VITRINE_API_URL com a URL /exec da implantação atualizada. A saída anterior foi preservada.')
+    if data.get('schemaVersion') != 4 or data.get('sourceContract') != 'core-imobiliario-v4':
+        raise RuntimeError('CONTRATO ANTIGO: a API pública não retornou schemaVersion=4 e sourceContract=core-imobiliario-v4. Publique nova versão do Web App público e ajuste VITRINE_API_URL no GitHub. Não publicar catálogo incompleto.')
+    for rownum, entry in enumerate(data['items'], start=1):
+        if not isinstance(entry, dict) or not all(k in entry for k in ('attributes', 'description', 'gallery', 'state')):
+            raise RuntimeError(f'CONTRATO INCOMPLETO no imóvel {rownum}: API não disponibilizou attributes, description, gallery ou state. Verifique implantação pública V4.1.6.')
+        if not isinstance(entry['attributes'], list) or not isinstance(entry['gallery'], list) or not isinstance(entry['description'], str):
+            raise RuntimeError(f'TIPOS INVÁLIDOS no imóvel {rownum}: attributes e gallery devem ser listas, description deve ser texto.')
     if not data['items'] and not (data.get('snapshotComplete') is True and data.get('publishedRows') == 0 and isinstance(data.get('totalRows'), int)):
         raise RuntimeError('API vazia sem confirmação de snapshot completo: saída anterior preservada')
     return data
@@ -154,8 +161,7 @@ def convert_record(raw, site):
 
 
 def normalize(payload, site):
-    input_with_attrs=sum(bool(attributes(i.get('attributes') or i.get('atributos') or i.get('ATRIBUTOS') or i.get('beneficios')))
-                         for i in payload['items'] if isinstance(i,dict))
+    input_with_attrs=sum(bool(attributes(i['attributes'])) for i in payload['items'])
     all_items = [convert_record(i,site) for i in payload['items']]
     all_items = [i for i in all_items if i]
     output_with_attrs=sum(bool(i['attributes']) for i in all_items)
@@ -171,7 +177,7 @@ def normalize(payload, site):
 
 def catalog_json(items, payload, conf):
     # items: contrato principal da vitrine; empreendimentos: compatibilidade de leitores antigos.
-    return {'schemaVersion':4,'nome':conf.get('name','Portal Imobiliário'),'tipo':'portal_imobiliario',
+    return {'schemaVersion':4,'sourceContract':'core-imobiliario-v4','nome':conf.get('name','Portal Imobiliário'),'tipo':'portal_imobiliario',
             'url_principal':conf['site_url'],'url_pesquisa':conf['site_url'],
             'config':payload.get('config',{}),'snapshotComplete':payload.get('snapshotComplete') is True,
             'items':items,'empreendimentos':items,
