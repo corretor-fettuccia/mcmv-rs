@@ -231,7 +231,9 @@ dl{{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:18
 
 def sitemap(items,site):
     urlset=ET.Element('{%s}urlset'%SM)
-    urls=[site]+[i['pageUrl'] for i in items]+[i['url'] for i in items]
+    # URLs canônicas deste portal. LPs externas são referenciadas nas páginas,
+    # mas não pertencem ao sitemap desta propriedade do Search Console.
+    urls=[site]+[i['pageUrl'] for i in items]
     for u in dict.fromkeys(urls): ET.SubElement(ET.SubElement(urlset,'{%s}url'%SM),'{%s}loc'%SM).text=u
     ET.indent(urlset,space='  ')
     return b'<?xml version="1.0" encoding="utf-8"?>\n'+ET.tostring(urlset,encoding='utf-8')+b'\n'
@@ -278,13 +280,33 @@ def put(path, data):
 
 def main():
     conf=settings();payload=get_payload();items=normalize(payload,conf['site_url'])
-    # Guarda de redução abrupta: protege contra API truncada ou filtro errado.
+    # Uma redução só é considerada confiável com snapshot completo e contagens coerentes.
+    # Isso é especialmente importante ao desativar imóveis no painel privado.
+    reported_total=payload.get('totalRows')
+    reported_published=payload.get('publishedRows')
+    if (payload.get('snapshotComplete') is not True or
+        type(reported_total) is not int or type(reported_published) is not int or
+        reported_total < 0 or reported_published < 0 or
+        reported_published > reported_total or reported_published != len(payload['items'])):
+        raise RuntimeError('SNAPSHOT INCOMPLETO: snapshotComplete=true, totalRows e publishedRows coerentes são obrigatórios; não publicar. ' +
+                           f"API totalRows={reported_total!r}, publishedRows={reported_published!r}, items={len(payload['items'])}.")
+    # Guarda de redução abrupta: 40% era inadequado para pequenos catálogos.
     previous=[]
     if (ROOT/'catalogo.json').exists():
         try:previous=json.loads((ROOT/'catalogo.json').read_text(encoding='utf-8')).get('items',[])
         except (ValueError,TypeError):previous=[]
-    if len(previous)>=4 and len(items)<len(previous)*0.6 and os.environ.get('PORTAL_ALLOW_LARGE_REMOVAL')!='1':
-        raise RuntimeError('Redução superior a 40% do catálogo: verifique fonte/API antes de publicar (override PORTAL_ALLOW_LARGE_REMOVAL=1)')
+    removed_count=len(previous)-len(items)
+    print(f'VALIDAÇÃO DE SNAPSHOT: API confirma {reported_published} publicados de {reported_total} registros; '
+          f'catálogo anterior={len(previous)}, novo={len(items)}.', flush=True)
+    # Somente catálogos de porte relevante (20+ registros) usam a guarda percentual;
+    # com 4 -> 2 imóveis, a redução legítima de 50% não deve bloquear a publicação.
+    # O operador ainda pode confirmar uma grande redução pelo workflow_dispatch.
+    if len(previous) >= 20 and len(items) < len(previous)*0.6 and os.environ.get('PORTAL_ALLOW_LARGE_REMOVAL')!='1':
+        raise RuntimeError(f'REDUÇÃO GRANDE: {len(previous)} -> {len(items)} imóveis. '
+                           'API retornou snapshot completo, mas esta redução precisa de autorização em Actions '
+                           '(Run workflow -> permitir_reducao_grande=true). A saída anterior foi preservada.')
+    if removed_count > 0:
+        print(f'PUBLICAÇÃO: {removed_count} anúncios deixam o catálogo; páginas anteriores receberão noindex.', flush=True)
     catalog=catalog_json(items,payload,conf)
     from merchant_from_catalog import build as merchant_projection
     outputs={'catalogo.json':(json.dumps(catalog,ensure_ascii=False,indent=2,allow_nan=False)+'\n').encode(),
