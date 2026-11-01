@@ -48,6 +48,8 @@ def run():
         catalog = json.loads((root / 'catalogo.json').read_text(encoding='utf-8'))
         assert len(catalog['items']) == 2, catalog['items']
         assert catalog['filtros']['atributos'] == ['Churrasqueira', 'Piscina', 'Rooftop', 'Sacada']
+        assert catalog['empreendimentos'][0]['atributos']==catalog['items'][0]['attributes']
+        assert len(catalog['empreendimentos']) == 2
         assert (root / 'imoveis' / 'LINQ-ID-1' / 'index.html').exists()
         assert (root / 'imoveis' / 'MEZZANO-ID-2' / 'index.html').exists()
         assert len(ET.parse(root / 'merchant-produtos.xml').findall('.//item')) == 1

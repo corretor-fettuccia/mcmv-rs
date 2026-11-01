@@ -13,6 +13,16 @@ assert cat.get('sourceContract') == 'core-imobiliario-v4'
 assert cat.get('sourceContract')=='core-imobiliario-v4', 'Catálogo sem contrato de origem V4'
 found=sorted({a for i in items for a in i.get('attributes',[])},key=str.casefold)
 assert cat.get('filtros',{}).get('atributos')==found, 'Filtros divergentes dos atributos dos imóveis'
+assert cat.get('atributos_disponiveis')==found, 'Atributos disponíveis divergentes'
+assert 'atributos' in cat.get('filtros',{}).get('campos',[]), 'Campo atributos não listado entre os filtros'
+legacy=cat.get('empreendimentos')
+assert isinstance(legacy,list) and len(legacy)==len(items), 'Projeção de compatibilidade ausente ou incompleta'
+by_id={x['id']:x for x in items}
+for old in legacy:
+    current=by_id.get(old.get('id'))
+    assert current and old.get('atributos')==current['attributes'], f'ATRIBUTOS ausentes na projeção legada: {old.get("id")}'
+    assert old.get('descricao_completa')==current['description'], 'Descrição completa ausente na projeção legada'
+
 idx=(root/'index.html').read_text(encoding='utf-8')
 app=(root/'app.js').read_text(encoding='utf-8')
 assert 'id="attributeArea"' in idx and 'id="attributeFilters"' in idx, 'Filtro ausente no HTML da vitrine'

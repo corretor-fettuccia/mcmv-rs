@@ -34,6 +34,10 @@ def run():
         doc=json.loads((site/'catalogo.json').read_text(encoding='utf-8'))
         assert doc['items'][0]['description']=='Descrição integral de teste.\nSegundo parágrafo.'
         assert doc['items'][0]['attributes']==['Sacada','Jacuzzi']
+        assert doc['empreendimentos'][0]['atributos']==['Sacada','Jacuzzi']
+        assert doc['filtros']['atributos']==['Jacuzzi','Sacada']
+        assert 'atributos' in doc['filtros']['campos']
+        assert doc['empreendimentos'][0]['descricao_completa']==doc['items'][0]['description']
         page=site/'imoveis'/'TESTE01'/'index.html'
         assert page.exists() and 'Segundo parágrafo' in page.read_text()
         assert len(ET.parse(site/'merchant-produtos.xml').findall('.//item'))==1

@@ -176,13 +176,65 @@ def normalize(payload, site):
 
 
 def catalog_json(items, payload, conf):
-    # items: contrato principal da vitrine; empreendimentos: compatibilidade de leitores antigos.
-    return {'schemaVersion':4,'sourceContract':'core-imobiliario-v4','nome':conf.get('name','Portal Imobiliário'),'tipo':'portal_imobiliario',
-            'url_principal':conf['site_url'],'url_pesquisa':conf['site_url'],
-            'config':payload.get('config',{}),'snapshotComplete':payload.get('snapshotComplete') is True,
-            'items':items,'empreendimentos':items,
-            'total_empreendimentos':len(items),'filtros':{'atributos': sorted({a for i in items for a in i['attributes']},key=str.casefold)},
-            'feeds':{'google_merchant_xml':conf['site_url']+'merchant-produtos.xml','google_ads_csv':conf['site_url']+'google-ads-imoveis.csv'}}
+    """Catálogo V4 público, incluindo projeção legada com ATRIBUTOS.
+
+    A vitrine usa items[].attributes; leitores legados e agentes podem usar
+    empreendimentos[].atributos. Ambas vêm do mesmo registro da API V4.
+    """
+    available = sorted({attr for item in items for attr in item['attributes']}, key=str.casefold)
+    legacy = []
+    for item in items:
+        legacy.append({
+            'id': item['id'],
+            'nome': item['name'],
+            'descricao': item['highlight'] or item['description'],
+            'descricao_completa': item['description'],
+            'atributos': item['attributes'],
+            'galeria': item['gallery'],
+            'dormitorios': item['bedrooms'],
+            'suites': item['suites'],
+            'banheiros': item['bathrooms'],
+            'vagas': item['parking'],
+            'area_privativa': item['privateArea'],
+            'area_total': item['totalArea'],
+            'area_terreno': item['lotArea'],
+            'tipo_imovel': item['propertyType'],
+            'marca': item['brand'],
+            'cidade': item['city'],
+            'bairro': item['neighborhood'],
+            'regiao': item['region'],
+            'uf': item['uf'],
+            'endereco': item['address'],
+            'situacao': item['state'],
+            'valor_minimo': item['minimum'],
+            'valor_maximo': item['maximum'],
+            'imagem': item['image'],
+            'url_empreendimento': item['url'],
+            'url_detalhes': item['pageUrl'],
+            'url_busca': conf['site_url']
+        })
+    return {
+        'schemaVersion': 4,
+        'sourceContract': 'core-imobiliario-v4',
+        'nome': conf.get('name', 'Portal Imobiliário'),
+        'tipo': 'portal_imobiliario',
+        'url_principal': conf['site_url'],
+        'url_pesquisa': conf['site_url'],
+        'config': payload.get('config', {}),
+        'snapshotComplete': payload.get('snapshotComplete') is True,
+        'total_empreendimentos': len(items),
+        'items': items,
+        'empreendimentos': legacy,
+        'filtros': {
+            'campos': ['regiao', 'cidade', 'bairro', 'nome_do_empreendimento', 'situacao', 'renda_familiar', 'atributos'],
+            'atributos': available
+        },
+        'atributos_disponiveis': available,
+        'feeds': {
+            'google_merchant_xml': conf['site_url'] + 'merchant-produtos.xml',
+            'google_ads_csv': conf['site_url'] + 'google-ads-imoveis.csv'
+        }
+    }
 
 
 def h(v):return html.escape(str(v or ''),quote=True)
