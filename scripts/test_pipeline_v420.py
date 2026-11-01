@@ -33,8 +33,8 @@ def exercise(root,fixture):
     env=os.environ.copy()
     env['PORTAL_FIXTURE']=str(fixture)
     env.pop('VITRINE_API_URL',None)
-    cmd=[sys.executable,str(root/'scripts'/'core.py')]
-    subprocess.run(cmd,cwd=root,env=env,check=True,stdout=subprocess.DEVNULL)
+    for engine in ('sinc-data','make-feed-merchantcenter','make-sitemap','make-subpage'):
+        subprocess.run([sys.executable,str(root/'scripts'/f'{engine}.py')],cwd=root,env=env,check=True,stdout=subprocess.DEVNULL)
     subprocess.run([sys.executable,str(root/'scripts'/'validate_portal_v420.py')],cwd=root,env=env,check=True,stdout=subprocess.DEVNULL)
 
 
@@ -77,7 +77,7 @@ def run():
         previous=(root/'catalogo.json').read_bytes()
         data['snapshotComplete']=False
         fixture.write_text(json.dumps(data,ensure_ascii=False),encoding='utf-8')
-        result=subprocess.run([sys.executable,str(root/'scripts'/'core.py')],cwd=root,env={**os.environ,'PORTAL_FIXTURE':str(fixture)},stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+        result=subprocess.run([sys.executable,str(root/'scripts'/'sinc-data.py')],cwd=root,env={**os.environ,'PORTAL_FIXTURE':str(fixture)},stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
         assert result.returncode!=0 and (root/'catalogo.json').read_bytes()==previous
     print('TESTES V4.2 OK: catálogo, atributos, feed, sitemap, HTML, compartilhar, atualização, inativação e falha da API.')
 

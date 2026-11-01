@@ -28,7 +28,8 @@ def run():
         fixture.write_text(json.dumps({'ok':True,'schemaVersion':4,'sourceContract':'core-imobiliario-v4',
                                        'snapshotComplete':True,'totalRows':1,'publishedRows':1,'items':[row]}),encoding='utf-8')
         env={**os.environ,'PORTAL_FIXTURE':str(fixture)}
-        subprocess.run([sys.executable,str(root/'scripts'/'core.py')],env=env,cwd=root,check=True,stdout=subprocess.DEVNULL)
+        for engine in ('sinc-data','make-feed-merchantcenter','make-sitemap','make-subpage'):
+            subprocess.run([sys.executable,str(root/'scripts'/f'{engine}.py')],env=env,cwd=root,check=True,stdout=subprocess.DEVNULL)
         subprocess.run([sys.executable,str(root/'scripts'/'stage_pages_v421.py')],env=env,cwd=root,check=True,stdout=subprocess.DEVNULL)
         subprocess.run([sys.executable,str(root/'scripts'/'validate_pages_v421.py')],env=env,cwd=root,check=True,stdout=subprocess.DEVNULL)
         page=root/'_site'/'imoveis'/'imovel_1'/'index.html'

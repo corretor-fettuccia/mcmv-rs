@@ -129,6 +129,7 @@ def run():
     if catalog.get('schemaVersion') != 4 or not isinstance(catalog.get('items'), list):
         raise RuntimeError('Catálogo V4 obrigatório. Execute sinc-data antes.')
     pages_dir = ROOT / 'imoveis'
+    pages_dir.mkdir(parents=True, exist_ok=True)
     active = set()
     updated = 0
     for item in catalog['items']:
