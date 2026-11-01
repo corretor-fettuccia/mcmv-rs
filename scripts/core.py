@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Core V4.2: executa quatro motores na ordem. Falha em qualquer etapa => sem publicação."""
+"""Core V4.2.1: executa quatro motores na ordem. Falha em qualquer etapa => sem publicação."""
 import argparse
 import subprocess
 import sys
@@ -19,14 +19,14 @@ def run():
     directory = Path(__file__).resolve().parent
     jobs = [s for s in STEPS if not args.step or s[0] == args.step]
     for i, (label, filename) in enumerate(jobs, 1):
-        print(f'\n=== CORE V4.2 [{i}/{len(jobs)}] {label} ===', flush=True)
+        print(f'\n=== CORE V4.2.1 [{i}/{len(jobs)}] {label} ===', flush=True)
         result = subprocess.run([sys.executable, str(directory / filename)], check=False)
         if result.returncode:
             raise RuntimeError(f'Etapa {label} falhou (exit {result.returncode}); publicação interrompida.')
-    print('\nCORE V4.2: todas as etapas concluídas com sucesso.', flush=True)
+    print('\nCORE V4.2.1: todas as etapas concluídas com sucesso.', flush=True)
 
 if __name__ == '__main__':
     try: run()
     except Exception as exc:
-        print('ERRO CORE V4.2:', exc, file=sys.stderr)
+        print('ERRO CORE V4.2.1:', exc, file=sys.stderr)
         sys.exit(1)
