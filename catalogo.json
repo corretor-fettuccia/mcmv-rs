@@ -1,24 +1,218 @@
 {
+  "schemaVersion": 4,
+  "sourceContract": "core-imobiliario-v4",
   "nome": "MCMV-RS",
-  "tipo": "portal_independente_de_busca_imobiliaria",
-  "descricao": "Portal independente para pesquisar imóveis e empreendimentos no Rio Grande do Sul.",
+  "tipo": "portal_imobiliario",
   "url_principal": "https://mcmv-rs.com.br/",
   "url_pesquisa": "https://mcmv-rs.com.br/",
-  "filtros": [
-    "regiao",
-    "cidade",
-    "bairro",
-    "nome_do_empreendimento",
-    "situacao",
-    "renda_familiar"
-  ],
-  "aviso": "Sem vínculo institucional com CAIXA ou Governo Federal. Valores e condições sujeitos a confirmação.",
+  "config": {
+    "titulo": "Minha Casa Minha Vida RS",
+    "subtitulo": "Encontre empreendimentos compatíveis com seu perfil.",
+    "segmento": "MCMV",
+    "simuladorAtivo": true,
+    "intervaloPercentual": 20,
+    "fatorRenda": 0.3,
+    "prazoMeses": 420,
+    "jurosAno": 0.08,
+    "faixasRenda": [
+      {
+        "id": 1,
+        "nome": "Faixa 1",
+        "ate": 3200
+      },
+      {
+        "id": 2,
+        "nome": "Faixa 2",
+        "ate": 5000
+      },
+      {
+        "id": 3,
+        "nome": "Faixa 3",
+        "ate": 9600
+      },
+      {
+        "id": 4,
+        "nome": "Faixa 4",
+        "ate": 13000
+      }
+    ]
+  },
+  "snapshotComplete": true,
   "total_empreendimentos": 2,
+  "items": [
+    {
+      "id": "IMB20261031213808214_02858C03",
+      "url": "https://linq.mcmv-rs.com.br",
+      "pageUrl": "https://mcmv-rs.com.br/imoveis/IMB20261031213808214_02858C03/",
+      "name": "LINQ Canoas | 2 Dormitórios | Sacada | Minha Casa Minha Vida",
+      "highlight": "LINQ Your Place no Igara, Canoas: apartamentos de 2 dormitórios, sacada com churrasqueira e lazer. Minha Casa Minha Vida com parcelas na faixa de R$ 2 mil/mês.",
+      "description": "LINQ Your Place no Igara, Canoas: apartamentos de 2 dormitórios, sacada com churrasqueira e lazer. Minha Casa Minha Vida com parcelas na faixa de R$ 2 mil/mês.",
+      "descriptionSource": "DESCRICAO_COMPLETA",
+      "image": "https://linq.mcmv-rs.com.br/share.webp",
+      "gallery": [
+        "https://linq.mcmv-rs.com.br/share.webp",
+        "https://linq.mcmv-rs.com.br/assets/images/benefits-showcase-backgroundimage-9.webp",
+        "https://flexinc.com.br/wp-content/uploads/2026/06/linq-foto-perspectiva.webp",
+        "https://flexinc.com.br/wp-content/uploads/2026/06/linq-lazer-piscina.webp",
+        "https://flexinc.com.br/wp-content/uploads/2026/06/linq-unidades-living.webp",
+        "https://flexinc.com.br/wp-content/uploads/2026/06/linq-lazer-espaco-gourmet.webp",
+        "https://flexinc.com.br/wp-content/uploads/2026/06/linq-lazer-coworking.webp"
+      ],
+      "attributes": [
+        "Sacada",
+        "Churrasqueira",
+        "Água quente",
+        "2 Dormitórios",
+        "Elevador duplo"
+      ],
+      "propertyType": "apartamento",
+      "brand": "FLEX",
+      "condition": "new",
+      "googleEnabled": true,
+      "googleAvailability": "in_stock",
+      "merchantId": "linqyp",
+      "seoTitle": "LINQ Canoas | 2 Dormitórios | Sacada | Minha Casa Minha Vida",
+      "region": "Metropolitana RS",
+      "city": "Canoas",
+      "neighborhood": "Marechal Rondon",
+      "address": "Rua Camboatas, 465, Igara",
+      "uf": "RS",
+      "state": "Em construção",
+      "minimum": 250000,
+      "maximum": 350000,
+      "campaign": "SELO",
+      "campaignText": "Taxas de ITBI e Registro grátis.",
+      "campaignStart": "",
+      "campaignEnd": "",
+      "order": 0,
+      "bedrooms": 2,
+      "suites": 2,
+      "bathrooms": 2,
+      "parking": 1,
+      "privateArea": 47,
+      "totalArea": null,
+      "lotArea": null
+    },
+    {
+      "id": "mezzano",
+      "url": "https://mezzano.mcmv-rs.com.br/",
+      "pageUrl": "https://mcmv-rs.com.br/imoveis/mezzano/",
+      "name": "Mezzano Domingos Martins | Rooftop no Centro de Canoas|MCMV",
+      "highlight": "Parcela R$3.500,00/Mês, torre única com 36 apartamentos de 2 dormitórios, suíte e sacada com churrasqueira. Piscina no rooftop. Minha Casa minha Vida.",
+      "description": "Parcela R$3.500,00/Mês, torre única com 36 apartamentos de 2 dormitórios, suíte e sacada com churrasqueira. Piscina no rooftop. Minha Casa minha Vida.",
+      "descriptionSource": "DESCRICAO_COMPLETA",
+      "image": "https://mezzano.mcmv-rs.com.br/share.png",
+      "gallery": [
+        "https://mezzano.mcmv-rs.com.br/share.png",
+        "https://mezzano.mcmv-rs.com.br/assets/images/hero-plus-image1-1.webp",
+        "https://mezzano.mcmv-rs.com.br/assets/images/hero-plus-image2-2.webp"
+      ],
+      "attributes": [
+        "Sacada",
+        "Churrasqueira",
+        "Piscina",
+        "Rooftop",
+        "Elevador duplo"
+      ],
+      "propertyType": "apartamento",
+      "brand": "Engefortes",
+      "condition": "new",
+      "googleEnabled": false,
+      "googleAvailability": "",
+      "merchantId": "mezzano",
+      "seoTitle": "Mezzano Domingos Martins | Rooftop no Centro de Canoas|MCMV",
+      "region": "Metropolitana RS",
+      "city": "Canoas",
+      "neighborhood": "Centro",
+      "address": "Rua Domingos Martins, 584, Centro",
+      "uf": "RS",
+      "state": "Em construção",
+      "minimum": 500000,
+      "maximum": 530000,
+      "campaign": "BANNER",
+      "campaignText": "Entrada parcelada até 36x",
+      "campaignStart": "",
+      "campaignEnd": "",
+      "order": 0,
+      "bedrooms": 2,
+      "suites": 2,
+      "bathrooms": 1,
+      "parking": 2,
+      "privateArea": 63,
+      "totalArea": null,
+      "lotArea": null
+    }
+  ],
   "empreendimentos": [
+    {
+      "id": "IMB20261031213808214_02858C03",
+      "nome": "LINQ Canoas | 2 Dormitórios | Sacada | Minha Casa Minha Vida",
+      "descricao": "LINQ Your Place no Igara, Canoas: apartamentos de 2 dormitórios, sacada com churrasqueira e lazer. Minha Casa Minha Vida com parcelas na faixa de R$ 2 mil/mês.",
+      "descricao_completa": "LINQ Your Place no Igara, Canoas: apartamentos de 2 dormitórios, sacada com churrasqueira e lazer. Minha Casa Minha Vida com parcelas na faixa de R$ 2 mil/mês.",
+      "atributos": [
+        "Sacada",
+        "Churrasqueira",
+        "Água quente",
+        "2 Dormitórios",
+        "Elevador duplo"
+      ],
+      "galeria": [
+        "https://linq.mcmv-rs.com.br/share.webp",
+        "https://linq.mcmv-rs.com.br/assets/images/benefits-showcase-backgroundimage-9.webp",
+        "https://flexinc.com.br/wp-content/uploads/2026/06/linq-foto-perspectiva.webp",
+        "https://flexinc.com.br/wp-content/uploads/2026/06/linq-lazer-piscina.webp",
+        "https://flexinc.com.br/wp-content/uploads/2026/06/linq-unidades-living.webp",
+        "https://flexinc.com.br/wp-content/uploads/2026/06/linq-lazer-espaco-gourmet.webp",
+        "https://flexinc.com.br/wp-content/uploads/2026/06/linq-lazer-coworking.webp"
+      ],
+      "dormitorios": 2,
+      "suites": 2,
+      "banheiros": 2,
+      "vagas": 1,
+      "area_privativa": 47,
+      "area_total": null,
+      "area_terreno": null,
+      "tipo_imovel": "apartamento",
+      "marca": "FLEX",
+      "cidade": "Canoas",
+      "bairro": "Marechal Rondon",
+      "regiao": "Metropolitana RS",
+      "uf": "RS",
+      "endereco": "Rua Camboatas, 465, Igara",
+      "situacao": "Em construção",
+      "valor_minimo": 250000,
+      "valor_maximo": 350000,
+      "imagem": "https://linq.mcmv-rs.com.br/share.webp",
+      "url_empreendimento": "https://linq.mcmv-rs.com.br",
+      "url_detalhes": "https://mcmv-rs.com.br/imoveis/IMB20261031213808214_02858C03/",
+      "url_busca": "https://mcmv-rs.com.br/"
+    },
     {
       "id": "mezzano",
       "nome": "Mezzano Domingos Martins | Rooftop no Centro de Canoas|MCMV",
       "descricao": "Parcela R$3.500,00/Mês, torre única com 36 apartamentos de 2 dormitórios, suíte e sacada com churrasqueira. Piscina no rooftop. Minha Casa minha Vida.",
+      "descricao_completa": "Parcela R$3.500,00/Mês, torre única com 36 apartamentos de 2 dormitórios, suíte e sacada com churrasqueira. Piscina no rooftop. Minha Casa minha Vida.",
+      "atributos": [
+        "Sacada",
+        "Churrasqueira",
+        "Piscina",
+        "Rooftop",
+        "Elevador duplo"
+      ],
+      "galeria": [
+        "https://mezzano.mcmv-rs.com.br/share.png",
+        "https://mezzano.mcmv-rs.com.br/assets/images/hero-plus-image1-1.webp",
+        "https://mezzano.mcmv-rs.com.br/assets/images/hero-plus-image2-2.webp"
+      ],
+      "dormitorios": 2,
+      "suites": 2,
+      "banheiros": 1,
+      "vagas": 2,
+      "area_privativa": 63,
+      "area_total": null,
+      "area_terreno": null,
+      "tipo_imovel": "apartamento",
+      "marca": "Engefortes",
       "cidade": "Canoas",
       "bairro": "Centro",
       "regiao": "Metropolitana RS",
@@ -29,27 +223,41 @@
       "valor_maximo": 530000,
       "imagem": "https://mezzano.mcmv-rs.com.br/share.png",
       "url_empreendimento": "https://mezzano.mcmv-rs.com.br/",
-      "url_busca": "https://mcmv-rs.com.br/"
-    },
-    {
-      "id": "IMB20261031213808214_02858C03",
-      "nome": "LINQ Canoas | 2 Dormitórios | Sacada | Minha Casa Minha Vida",
-      "descricao": "LINQ Your Place no Igara, Canoas: apartamentos de 2 dormitórios, sacada com churrasqueira e lazer. Minha Casa Minha Vida com parcelas na faixa de R$ 2 mil/mês.",
-      "cidade": "Canoas",
-      "bairro": "Marechal Rondon",
-      "regiao": "Metropolitana RS",
-      "uf": "RS",
-      "endereco": "Rua Camboatas, 465, Igara",
-      "situacao": "Em construção",
-      "valor_minimo": 250000,
-      "valor_maximo": 350000,
-      "imagem": "https://linq.mcmv-rs.com.br/share.webp",
-      "url_empreendimento": "https://linq.mcmv-rs.com.br/",
+      "url_detalhes": "https://mcmv-rs.com.br/imoveis/mezzano/",
       "url_busca": "https://mcmv-rs.com.br/"
     }
   ],
+  "filtros": {
+    "campos": [
+      "regiao",
+      "cidade",
+      "bairro",
+      "nome_do_empreendimento",
+      "situacao",
+      "renda_familiar",
+      "atributos"
+    ],
+    "atributos": [
+      "2 Dormitórios",
+      "Churrasqueira",
+      "Elevador duplo",
+      "Piscina",
+      "Rooftop",
+      "Sacada",
+      "Água quente"
+    ]
+  },
+  "atributos_disponiveis": [
+    "2 Dormitórios",
+    "Churrasqueira",
+    "Elevador duplo",
+    "Piscina",
+    "Rooftop",
+    "Sacada",
+    "Água quente"
+  ],
   "feeds": {
-    "google_ads_imoveis": "https://mcmv-rs.com.br/google-ads-imoveis.csv",
-    "merchant_formato": "https://mcmv-rs.com.br/merchant-produtos.xml"
+    "google_merchant_xml": "https://mcmv-rs.com.br/merchant-produtos.xml",
+    "google_ads_csv": "https://mcmv-rs.com.br/google-ads-imoveis.csv"
   }
 }

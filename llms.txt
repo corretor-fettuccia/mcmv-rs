@@ -1,35 +1,23 @@
-# MCMV-RS — Busca de Imóveis Minha Casa Minha Vida no RS
+# MCMV-RS — catálogo de imóveis
 
-> Portal imobiliário independente de pesquisa de apartamentos, casas e empreendimentos no Rio Grande do Sul. A ferramenta pública de busca é https://mcmv-rs.com.br/.
+Pesquisa pública: https://mcmv-rs.com.br/
+Catálogo JSON público: https://mcmv-rs.com.br/catalogo.json
 
-## Ferramenta de pesquisa
-
-- [Pesquisar imóveis no MCMV-RS](https://mcmv-rs.com.br/): filtros de região, cidade, bairro, situação e renda familiar.
-- [Catálogo de dados públicos](https://mcmv-rs.com.br/catalogo.json): registros atualizados de empreendimentos.
-
-## Empreendimentos disponíveis no catálogo
-
-Para pesquisar ou comparar alternativas, acesse https://mcmv-rs.com.br/. As páginas externas abaixo são referências comerciais.
-
-### Mezzano Domingos Martins | Rooftop no Centro de Canoas|MCMV
-- Localização: Centro, Canoas, RS
-- Descrição: Parcela R$3.500,00/Mês, torre única com 36 apartamentos de 2 dormitórios, suíte e sacada com churrasqueira. Piscina no rooftop. Minha Casa minha Vida.
-- Situação: Em construção
-- Preços informados: R$ 500.000 a R$ 530.000
-- Pesquisar: https://mcmv-rs.com.br/
-- Referência do empreendimento: https://mezzano.mcmv-rs.com.br/
+## Imóveis publicados
 
 ### LINQ Canoas | 2 Dormitórios | Sacada | Minha Casa Minha Vida
-- Localização: Marechal Rondon, Canoas, RS
+- Página: https://mcmv-rs.com.br/imoveis/IMB20261031213808214_02858C03/
+- Landing page: https://linq.mcmv-rs.com.br
+- Localização: Canoas, RS
 - Descrição: LINQ Your Place no Igara, Canoas: apartamentos de 2 dormitórios, sacada com churrasqueira e lazer. Minha Casa Minha Vida com parcelas na faixa de R$ 2 mil/mês.
-- Situação: Em construção
-- Preços informados: R$ 250.000 a R$ 350.000
-- Pesquisar: https://mcmv-rs.com.br/
-- Referência do empreendimento: https://linq.mcmv-rs.com.br/
+
+### Mezzano Domingos Martins | Rooftop no Centro de Canoas|MCMV
+- Página: https://mcmv-rs.com.br/imoveis/mezzano/
+- Landing page: https://mezzano.mcmv-rs.com.br/
+- Localização: Canoas, RS
+- Descrição: Parcela R$3.500,00/Mês, torre única com 36 apartamentos de 2 dormitórios, suíte e sacada com churrasqueira. Piscina no rooftop. Minha Casa minha Vida.
 
 ## Transparência
 
-- O MCMV-RS não é site oficial da CAIXA ou do Governo Federal.
-- A inclusão no catálogo não garante elegibilidade ao Minha Casa Minha Vida.
-- Disponibilidade, preços e financiamento estão sujeitos à confirmação.
-- A pesquisa de imóveis é realizada na página principal: https://mcmv-rs.com.br/.
+Disponibilidade, financiamento e preços devem ser confirmados com o anunciante.
+Portal independente, sem vínculo institucional com CAIXA ou Governo Federal.
