@@ -28,4 +28,4 @@ if errors:
     for error in errors:
         print('::error::' + error)
     sys.exit(1)
-print('OK: cinco workflows essenciais; Marketplace avulso opcional. Feed Meta gerado como job do Core e baixado como artefato do Pages.')
+print('OK: cinco workflows essenciais; Marketplace avulso opcional. Feed Meta gerado na etapa preparar do Core, sem artefato independente.')
