@@ -3,7 +3,7 @@
 from pathlib import Path
 import sys
 p=Path(__file__).resolve().parent.parent/'.github'/'workflows'
-allowed={'core-imobiliario.yml','sinc-data.yml','make-feed-merchantcenter.yml','make-sitemap.yml','make-subpage.yml'}
+allowed={'core-imobiliario.yml','sinc-data.yml','make-feed-merchantcenter.yml','make-sitemap.yml','make-subpage.yml','gerar-marketplace.yml'}
 existing={x.name for x in p.glob('*.yml')} | {x.name for x in p.glob('*.yaml')}
 missing=allowed-existing
 unknown=existing-allowed
@@ -16,4 +16,4 @@ for filename in sorted(allowed):
     if 'workflow_dispatch:' not in content:
         print('::error::Falta workflow_dispatch em', filename)
         sys.exit(1)
-print('OK: 5 workflows (.github/workflows), todos com workflow_dispatch; nenhum fluxo legado.')
+print('OK: 5 workflows originais + 1 Marketplace independente; todos com workflow_dispatch.')

@@ -11,7 +11,7 @@ import urllib.request
 import xml.etree.ElementTree as ET
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urljoin
 
 DEFAULT_SOURCE = 'https://mcmv-rs.com.br/catalogo.json'
 DEFAULT_OUTPUT = 'marketplace-produtos.xml'
@@ -98,9 +98,8 @@ def make_listing(item):
     url=item.get('pageUrl') if valid_https_url(item.get('pageUrl')) else item.get('url')
     price=money(item.get('minimum'))
     images=distinct_images(item)
-    availability=str(item.get('googleAvailability') or '').lower()
-    if availability in ('out_of_stock','discontinued','preorder'):
-        return None, 'indisponível pela fonte'
+    if item.get('marketplaceEnabled') is False:
+        return None, 'publicação Meta desativada explicitamente'
     if not (ident and name and city and region and address and price and valid_https_url(url) and images):
         return None, 'falta ID, título, cidade, UF, endereço, preço, URL ou imagem'
 
@@ -127,7 +126,7 @@ def make_listing(item):
     if neighborhood and neighborhood.casefold() in address.casefold(): add('neighborhood',neighborhood)
     for img in images:
         ET.SubElement(ET.SubElement(node,'image'),'url').text=img
-    add('listing_type','new_construction' if 'constru' in str(item.get('state') or '').casefold() else 'for_sale_by_agent')
+    add('listing_type','for_sale_by_agent')
     add('num_beds',optional_int(item.get('bedrooms')))
     add('num_baths',optional_int(item.get('bathrooms')))
     if isinstance(item.get('privateArea'),(int,float)) and item['privateArea']>0:
@@ -142,11 +141,15 @@ def make_listing(item):
     add('url',url)
     return node,None
 
-def compile_xml(doc):
+def compile_xml(doc, feed_url=None):
     items=check_contract(doc)
+    site_url=doc.get('url_principal')
+    if not valid_https_url(feed_url):
+        feed_url=urljoin(site_url.rstrip('/')+'/',DEFAULT_OUTPUT) if valid_https_url(site_url) else FEED_PUBLIC_URL
+    title=text_value(doc.get('nome'),150) or 'MCMV-RS'
     root=ET.Element('listings')
-    ET.SubElement(root,'title').text='MCMV-RS — Empreendimentos'
-    ET.SubElement(root,'link',{'rel':'self','href':FEED_PUBLIC_URL})
+    ET.SubElement(root,'title').text=f'{title} — Empreendimentos'
+    ET.SubElement(root,'link',{'rel':'self','href':feed_url})
     included=0; excluded=[]
     for item in items:
         listing,reason=make_listing(item)
@@ -175,9 +178,10 @@ def main(argv=None):
     parser.add_argument('--source',default=DEFAULT_SOURCE)
     parser.add_argument('--output',default=DEFAULT_OUTPUT)
     parser.add_argument('--report',default=None)
+    parser.add_argument('--feed-url',default=None,help='URL pública do arquivo XML (opcional)')
     args=parser.parse_args(argv)
     try:
-        content,report=compile_xml(get_json(args.source))
+        content,report=compile_xml(get_json(args.source),feed_url=args.feed_url)
         if args.report:
             atomic_write(args.report,json.dumps(report,ensure_ascii=False,indent=2).encode('utf-8'))
         atomic_write(args.output,content)

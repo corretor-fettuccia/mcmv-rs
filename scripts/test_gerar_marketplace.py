@@ -48,4 +48,25 @@ class Tests(unittest.TestCase):
         data=sample();data['items'][0]['minimum']='informe-se'
         with self.assertRaises(ValueError): compile_xml(data)
 
+    def test_flag_marketplace_independente_google(self):
+        data=sample()
+        data['items'][0]['googleAvailability']='out_of_stock'
+        xml,relatorio=compile_xml(data)
+        self.assertEqual(relatorio['incluidos'],1)
+        self.assertEqual(ET.fromstring(xml).findtext('listing/home_listing_id'),'LINQ_01')
+
+    def test_flag_marketplace_desativada(self):
+        data=sample()
+        data['items'][0]['marketplaceEnabled']=False
+        with self.assertRaises(ValueError): compile_xml(data)
+
+    def test_url_personalizada_para_outros_portais(self):
+        data=sample()
+        data['nome']='Portal Exemplo'
+        data['url_principal']='https://imobiliaria.example/'
+        xml,_=compile_xml(data)
+        root=ET.fromstring(xml)
+        self.assertEqual(root.find('link').attrib['href'],'https://imobiliaria.example/marketplace-produtos.xml')
+        self.assertEqual(root.findtext('title'),'Portal Exemplo — Empreendimentos')
+
 if __name__ == '__main__': unittest.main()
