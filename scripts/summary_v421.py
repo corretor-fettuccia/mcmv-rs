@@ -2,16 +2,21 @@
 """Resumo legível com links completos no GitHub Actions / Step summary."""
 import json
 import os
+from xml.etree import ElementTree as ET
 from core_lib import ROOT
 
 catalog = json.loads((ROOT/'catalogo.json').read_text(encoding='utf-8'))
 items = catalog.get('items', [])
 attrs = catalog.get('atributos_disponiveis', [])
-lines = ['## Core Imobiliário V4.2.1 — arquivos gerados', '',
+feed_meta = ROOT / 'marketplace-produtos.xml'
+feed_google = ROOT / 'merchant-produtos.xml'
+meta_count = len(ET.parse(feed_meta).getroot().findall('listing')) if feed_meta.exists() else 0
+lines = ['## Core Imobiliário V9.2 — arquivos gerados', '',
          f'- Imóveis publicados: **{len(items)}**',
          f'- Filtros por atributos: **{len(attrs)}**',
          f'- Subpáginas geradas: **{len(items)}**',
-         f'- Feed Google: `{catalog.get("feeds",{}).get("google_merchant_xml","")}`',
+         f'- Feed Google Merchant: **{"OK" if feed_google.is_file() else "AUSENTE"}** — `{catalog.get("url_principal","")}merchant-produtos.xml`',
+         f'- Feed Meta Marketplace: **{"OK" if meta_count else "AUSENTE"}**, {meta_count} anúncios — `{catalog.get("url_principal","")}marketplace-produtos.xml`',
          f'- Sitemap: `{catalog.get("url_principal","")}sitemap.xml`', '',
          '### Páginas dos imóveis', '']
 for item in items[:50]:

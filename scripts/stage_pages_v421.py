@@ -4,10 +4,8 @@
 Nao inclui codigo-fonte, workflows, dados de teste ou .git no site publicado.
 """
 import shutil
-import json
 from pathlib import Path
 from core_lib import ROOT
-from gerar_marketplace import compile_xml, atomic_write
 from validate_marketplace_v8 import run as validate_marketplace
 
 DEST = ROOT / '_site'
@@ -22,22 +20,17 @@ def ignore(_folder, names):
 
 
 def run():
-    # Usa o catalogo.json recém-baixado do Core, não uma versão antiga da branch.
-    doc = json.loads((ROOT / 'catalogo.json').read_text(encoding='utf-8'))
+    # Ambos os feeds DEVEM vir dos artefatos produzidos neste mesmo Core.
+    # Não gerar Meta aqui: a publicação nunca deve ocultar uma falha de geração.
+    catalog = ROOT / 'catalogo.json'
+    merchant = ROOT / 'merchant-produtos.xml'
     marketplace = ROOT / 'marketplace-produtos.xml'
-    try:
-        content, stats = compile_xml(doc)
-    except ValueError as exc:
-        # Sem anúncios Meta elegíveis, não publicar um XML antigo por engano.
-        if str(exc).startswith('Nenhum item válido:'):
-            marketplace.unlink(missing_ok=True)
-            print(f'::warning::Marketplace sem imóveis elegíveis: {exc}. Merchant permanece independente.', flush=True)
-        else:
-            raise
-    else:
-        atomic_write(marketplace, content)
-        validate_marketplace()
-        print(f'[Pages] Feed Meta gerado: {stats["incluidos"]} imóveis; {len(stats["excluidos"])} excluídos.', flush=True)
+    for filename, path in [('catalogo.json', catalog), ('merchant-produtos.xml', merchant),
+                           ('marketplace-produtos.xml', marketplace)]:
+        if not path.is_file() or path.stat().st_size == 0:
+            raise RuntimeError(f'[Pages] Falta arquivo obrigatório recebido do Core: {filename}')
+    validate_marketplace()
+    print(f'[Pages] Dois feeds conferidos: Merchant={merchant.stat().st_size} bytes, Meta={marketplace.stat().st_size} bytes', flush=True)
     if DEST.exists():
         shutil.rmtree(DEST)
     shutil.copytree(ROOT, DEST, ignore=ignore, symlinks=False)

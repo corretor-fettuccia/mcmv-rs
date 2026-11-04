@@ -99,6 +99,7 @@ class IntegracaoFeedsV6(unittest.TestCase):
             (root/'index.html').write_text('<h1>Portal</h1>', encoding='utf-8')
             (root/'merchant-produtos.xml').write_bytes(build_merchant(fixture()))
             (root/'catalogo.json').write_text(json.dumps(fixture()), encoding='utf-8')
+            (root/'marketplace-produtos.xml').write_bytes(compile_xml(fixture())[0])
             output = root/'_site'
             import validate_marketplace_v8
             with patch.object(stage_pages_v421, 'ROOT', root), patch.object(stage_pages_v421, 'DEST', output), patch.object(validate_marketplace_v8, 'ROOT', root):
