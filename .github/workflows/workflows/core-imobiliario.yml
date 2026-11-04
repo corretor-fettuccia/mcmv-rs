@@ -1,0 +1,171 @@
+name: Core Imobiliario - Sincronizar e Publicar
+
+# V9.4 - unico orquestrador de publicacao. Sequencia:
+#   1 sinc-data -> 2 feeds (Merchant + Marketplace, motor unico) -> 3 sitemap/robots/llms
+#   -> 4 subpaginas -> 5 validar -> 6 montar artefato Pages -> 7 publicar -> verificar URLs publicas.
+# Qualquer falha antes do passo 7 impede a publicacao. Nao existe workflow Meta separado.
+'on':
+  workflow_dispatch: {}
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/**'
+  schedule:
+    - cron: '17 7 * * *'
+
+concurrency:
+  group: core-imobiliario-pages
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  sinc_data:
+    name: 1/7 sinc-data
+    if: github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/sinc-data.yml
+    permissions:
+      contents: read
+
+  merchant:
+    name: 2/7 feeds Merchant + Marketplace
+    needs: sinc_data
+    uses: ./.github/workflows/make-feed-merchantcenter.yml
+    with:
+      encadeado: true
+    permissions:
+      contents: read
+
+  sitemap:
+    name: 3/7 sitemap, robots e llms
+    needs: merchant
+    uses: ./.github/workflows/make-sitemap.yml
+    with:
+      encadeado: true
+    permissions:
+      contents: read
+
+  subpage:
+    name: 4/7 paginas individuais
+    needs: sitemap
+    uses: ./.github/workflows/make-subpage.yml
+    with:
+      encadeado: true
+    permissions:
+      contents: read
+
+  preparar:
+    name: 5-6/7 Validar e montar artefato Pages
+    needs: subpage
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - name: Ler arquivos do Git
+        uses: actions/checkout@v5
+      - name: Preparar Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Testes de regressao automatizados (sem rede)
+        # Modulos nomeados, nao 'discover': testes de pacotes anteriores esquecidos no repositorio nao interferem.
+        run: |
+          python -u scripts/auditar_obsoletos_v942.py
+          cd scripts && python -u -m unittest test_feeds_unificados_v94 test_integracao_core_v8 test_integracao_feeds_v6 test_gerar_marketplace && cd ..
+          python -u scripts/test_core_v423.py
+          python -u scripts/test_pipeline_v420.py
+          python -u scripts/test_pipeline_v421.py
+          python -u scripts/test_reconstrucao_v427.py
+          node scripts/test_vitrine_hover_v9.js
+      - name: Auditar workflows essenciais e opcionais
+        run: python -u scripts/auditar_workflows_v425.py
+      - name: Verificar workflows antigos
+        run: python -u scripts/check_workflows_v423.py
+      - name: Receber catálogo
+        uses: actions/download-artifact@v4
+        with:
+          name: core-v4-catalogo
+          path: .
+      - name: Receber os dois feeds (Merchant + Marketplace)
+        uses: actions/download-artifact@v4
+        with:
+          name: core-v4-feeds
+          path: .
+      - name: Receber sitemap
+        uses: actions/download-artifact@v4
+        with:
+          name: core-v4-sitemap
+          path: .
+      - name: Receber páginas individuais
+        uses: actions/download-artifact@v4
+        with:
+          name: core-v4-subpages
+          path: .
+      - name: Restaurar subpáginas do artefato
+        run: |
+          test -s subpaginas-v4.tar.gz || { echo '::error::Arquivo de subpáginas ausente'; exit 1; }
+          tar -xzf subpaginas-v4.tar.gz
+          rm subpaginas-v4.tar.gz
+      - name: 5/7 Validar catálogo, filtros, feeds, sitemap e HTMLs
+        run: |
+          echo '=== V9.4 [5/7] VALIDACAO ==='
+          for f in catalogo.json merchant-produtos.xml marketplace-produtos.xml sitemap.xml robots.txt llms.txt; do
+            test -s "$f" || { echo "::error::V9.4 arquivo obrigatorio ausente: $f"; exit 1; }
+            echo "[V9.4] RECEBIDO $f ($(wc -c < "$f") bytes)"
+          done
+          python -u scripts/validate_portal_v420.py
+          python -u scripts/validate_xml_v94.py --check all
+          node --check app.js
+          node scripts/test_vitrine_catalogo_v420.js
+      - name: 6/7 Montar artefato Pages e confirmar os 3 XMLs
+        run: |
+          echo '=== V9.4 [6/7] MONTAGEM DO ARTEFATO ==='
+          python -u scripts/stage_pages_v421.py
+          python -u scripts/validate_pages_v421.py
+          python -u scripts/validate_xml_v94.py --root _site --check all
+          for f in merchant-produtos.xml marketplace-produtos.xml sitemap.xml; do
+            test -s "_site/$f" || { echo "::error::V9.4 ausente do artefato: $f"; exit 1; }
+          done
+          echo 'V9.4 OK: merchant-produtos.xml, marketplace-produtos.xml e sitemap.xml presentes e validos em _site.'
+          python -u scripts/summary_v421.py
+      - name: Preparar GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Enviar artefato do site para publicação
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+
+  publicar:
+    name: 7/7 Publicar o site no GitHub Pages
+    needs: preparar
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - name: Publicar artefato completo
+        id: deploy
+        uses: actions/deploy-pages@v4
+
+  verificar_publicacao:
+    name: Verificar URLs publicas dos 3 XMLs
+    needs: publicar
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - name: Ler arquivos do Git
+        uses: actions/checkout@v5
+      - name: Preparar Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Conferir merchant, marketplace e sitemap no dominio
+        run: python -u scripts/verify_public_v94.py
