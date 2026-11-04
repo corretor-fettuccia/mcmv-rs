@@ -4,19 +4,25 @@ import json
 import sys
 from pathlib import Path
 from core_lib import ROOT, settings
+from gerar_marketplace import make_listing
 
 
 def run():
     dest = ROOT / '_site'
     catalog = json.loads((dest / 'catalogo.json').read_text(encoding='utf-8'))
     conf = settings()
-    needed = ['index.html', 'app.js', 'catalogo.json', 'sitemap.xml', 'robots.txt', 'merchant-produtos.xml', 'marketplace-produtos.xml', '.nojekyll']
+    needed = ['index.html', 'app.js', 'catalogo.json', 'sitemap.xml', 'robots.txt', 'merchant-produtos.xml', '.nojekyll']
     for filename in needed:
         if not (dest / filename).is_file():
             raise RuntimeError('Arquivo ausente do artefato Pages: ' + filename)
     items = catalog.get('items')
     if catalog.get('schemaVersion') != 4 or not isinstance(items, list):
         raise RuntimeError('Catálogo não está no formato V4')
+    expected_meta = any(make_listing(item)[0] is not None for item in items)
+    if expected_meta and not (dest / 'marketplace-produtos.xml').is_file():
+        raise RuntimeError('Feed Marketplace ausente apesar de haver imóveis elegíveis')
+    if not expected_meta and (dest / 'marketplace-produtos.xml').exists():
+        raise RuntimeError('Feed Marketplace obsoleto: nenhum imóvel elegível')
     for item in items:
         target = dest / 'imoveis' / item['id'] / 'index.html'
         if not target.is_file():

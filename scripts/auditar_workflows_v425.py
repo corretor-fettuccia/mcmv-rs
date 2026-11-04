@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-"""Confere os seis workflows que integram o Core V8."""
+"""Confere os workflows obrigatorios sem exigir o Meta avulso."""
 from pathlib import Path
 import sys
 
 wf = Path(__file__).resolve().parents[1] / '.github' / 'workflows'
 essential = ('sinc-data.yml', 'make-feed-merchantcenter.yml', 'make-sitemap.yml',
              'make-subpage.yml', 'core-imobiliario.yml')
-optional = 'gerar-marketplace.yml'  # agora faz parte da sequencia V8
+optional = 'gerar-marketplace.yml'  # apenas para execucao avulsa, sem dependencia do Core
 errors = []
-for name in (*essential, optional):
+for name in essential + ((optional,) if (wf / optional).is_file() else ()):
     path = wf / name
     if not path.is_file():
         errors.append(f'AUSENTE: {path}')
@@ -28,4 +28,4 @@ if errors:
     for error in errors:
         print('::error::' + error)
     sys.exit(1)
-print('OK: seis workflows do Core V8, inclusive Marketplace.')
+print('OK: cinco workflows essenciais; Marketplace avulso opcional. Feed Meta gerado no staging Pages.')

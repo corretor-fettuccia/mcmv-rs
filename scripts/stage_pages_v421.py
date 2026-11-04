@@ -4,8 +4,11 @@
 Nao inclui codigo-fonte, workflows, dados de teste ou .git no site publicado.
 """
 import shutil
+import json
 from pathlib import Path
 from core_lib import ROOT
+from gerar_marketplace import compile_xml, atomic_write
+from validate_marketplace_v8 import run as validate_marketplace
 
 DEST = ROOT / '_site'
 OMIT_DIRS = {'.git', '.github', 'scripts', '_site', '__pycache__', 'node_modules', '.venv', 'tests', '.pytest_cache'}
@@ -19,6 +22,22 @@ def ignore(_folder, names):
 
 
 def run():
+    # Usa o catalogo.json recém-baixado do Core, não uma versão antiga da branch.
+    doc = json.loads((ROOT / 'catalogo.json').read_text(encoding='utf-8'))
+    marketplace = ROOT / 'marketplace-produtos.xml'
+    try:
+        content, stats = compile_xml(doc)
+    except ValueError as exc:
+        # Sem anúncios Meta elegíveis, não publicar um XML antigo por engano.
+        if str(exc).startswith('Nenhum item válido:'):
+            marketplace.unlink(missing_ok=True)
+            print(f'::warning::Marketplace sem imóveis elegíveis: {exc}. Merchant permanece independente.', flush=True)
+        else:
+            raise
+    else:
+        atomic_write(marketplace, content)
+        validate_marketplace()
+        print(f'[Pages] Feed Meta gerado: {stats["incluidos"]} imóveis; {len(stats["excluidos"])} excluídos.', flush=True)
     if DEST.exists():
         shutil.rmtree(DEST)
     shutil.copytree(ROOT, DEST, ignore=ignore, symlinks=False)

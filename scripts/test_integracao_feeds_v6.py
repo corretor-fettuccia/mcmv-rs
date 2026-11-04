@@ -1,5 +1,6 @@
 """Regressão V6: duas saídas independentes derivadas do mesmo catálogo."""
 import tempfile
+import json
 import shutil
 import subprocess
 import sys
@@ -66,7 +67,7 @@ class IntegracaoFeedsV6(unittest.TestCase):
         meta_xml, _ = compile_xml(catalog)
         self.assertEqual(len(ET.fromstring(meta_xml).findall('listing')), 1)
 
-    def test_core_v8_exige_workflow_marketplace(self):
+    def test_core_funciona_sem_workflow_avulso_marketplace(self):
         scripts = Path(__file__).resolve().parent
         src = scripts.parent / '.github' / 'workflows'
         with tempfile.TemporaryDirectory() as tmp:
@@ -86,6 +87,10 @@ class IntegracaoFeedsV6(unittest.TestCase):
             (dst / 'gerar-marketplace.yml').unlink()
             for audit in ('auditar_workflows_v425.py', 'check_workflows_v423.py'):
                 result = subprocess.run([sys.executable, str(root / 'scripts' / audit)], capture_output=True, text=True)
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            (dst / 'sinc-data.yml').unlink()
+            for audit in ('auditar_workflows_v425.py', 'check_workflows_v423.py'):
+                result = subprocess.run([sys.executable, str(root / 'scripts' / audit)], capture_output=True, text=True)
                 self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
 
     def test_publicador_copia_ambos_xmls_sem_alterar_fontes(self):
@@ -93,9 +98,10 @@ class IntegracaoFeedsV6(unittest.TestCase):
             root = Path(tmp)
             (root/'index.html').write_text('<h1>Portal</h1>', encoding='utf-8')
             (root/'merchant-produtos.xml').write_bytes(build_merchant(fixture()))
-            (root/'marketplace-produtos.xml').write_bytes(compile_xml(fixture())[0])
+            (root/'catalogo.json').write_text(json.dumps(fixture()), encoding='utf-8')
             output = root/'_site'
-            with patch.object(stage_pages_v421, 'ROOT', root),                  patch.object(stage_pages_v421, 'DEST', output):
+            import validate_marketplace_v8
+            with patch.object(stage_pages_v421, 'ROOT', root), patch.object(stage_pages_v421, 'DEST', output), patch.object(validate_marketplace_v8, 'ROOT', root):
                 stage_pages_v421.run()
             for name in ('merchant-produtos.xml', 'marketplace-produtos.xml'):
                 self.assertEqual((output/name).read_bytes(), (root/name).read_bytes())

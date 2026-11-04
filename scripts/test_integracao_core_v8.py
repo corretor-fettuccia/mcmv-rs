@@ -20,19 +20,14 @@ BASE = Path(__file__).resolve().parent.parent
 class TestCoreV8(unittest.TestCase):
     def test_chain_downloads_same_snapshot_and_both_feeds(self):
         core = (BASE / '.github/workflows/core-imobiliario.yml').read_text(encoding='utf-8')
-        meta = (BASE / '.github/workflows/gerar-marketplace.yml').read_text(encoding='utf-8')
-        self.assertLess(core.index('  merchant:'), core.index('  marketplace:'))
-        self.assertLess(core.index('  marketplace:'), core.index('  sitemap:'))
+        self.assertLess(core.index('  merchant:'), core.index('  sitemap:'))
         self.assertIn('needs: merchant', core)
-        self.assertIn('needs: marketplace', core)
-        self.assertIn('name: core-v4-marketplace', core)
+        self.assertNotIn('needs: marketplace', core)
+        self.assertNotIn('uses: ./.github/workflows/gerar-marketplace.yml', core)
         self.assertIn('needs: subpage', core)
-        self.assertIn('python -u scripts/validate_marketplace_v8.py', core)
-        self.assertIn('workflow_call:', meta)
-        self.assertIn('name: core-v4-catalogo', meta)
-        self.assertIn('name: core-v4-marketplace', meta)
-        self.assertIn('--source catalogo.json', meta)
-        self.assertNotIn('git push', meta)
+        self.assertIn('scripts/stage_pages_v421.py', core)
+        self.assertIn('name: core-v4-catalogo', core)
+        self.assertNotIn('git push', core)
 
     def test_both_feeds_use_same_catalog_and_enter_pages(self):
         source = fixture()
@@ -42,16 +37,28 @@ class TestCoreV8(unittest.TestCase):
             root = Path(d)
             (root / 'catalogo.json').write_text(json.dumps(source), encoding='utf8')
             (root / 'merchant-produtos.xml').write_bytes(google)
-            (root / 'marketplace-produtos.xml').write_bytes(meta)
+            # Simula o checkout sem feed Meta e sem workflow avulso.
             (root / 'index.html').write_text('<h1>teste</h1>', encoding='utf8')
-            with patch.object(validate_marketplace_v8, 'ROOT', root):
-                validate_marketplace_v8.run()
-            with patch.object(stage_pages_v421, 'ROOT', root), patch.object(stage_pages_v421, 'DEST', root / '_site'):
+            with patch.object(stage_pages_v421, 'ROOT', root), patch.object(stage_pages_v421, 'DEST', root / '_site'), patch.object(validate_marketplace_v8, 'ROOT', root):
                 stage_pages_v421.run()
             self.assertEqual((root / '_site/merchant-produtos.xml').read_bytes(), google)
             self.assertEqual((root / '_site/marketplace-produtos.xml').read_bytes(), meta)
             self.assertEqual(ET.fromstring(google).find('./channel/item') is not None, True)
             self.assertEqual(ET.fromstring(meta).find('listing') is not None, True)
+
+    def test_meta_invalido_nao_interrompe_merchant(self):
+        source = fixture()
+        source['items'][0]['marketplaceEnabled'] = False
+        google = merchant_build(source)
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            (root / 'catalogo.json').write_text(json.dumps(source), encoding='utf8')
+            (root / 'merchant-produtos.xml').write_bytes(google)
+            (root / 'marketplace-produtos.xml').write_text('antigo', encoding='utf8')
+            with patch.object(stage_pages_v421, 'ROOT', root), patch.object(stage_pages_v421, 'DEST', root / '_site'):
+                stage_pages_v421.run()
+            self.assertEqual((root / '_site/merchant-produtos.xml').read_bytes(), google)
+            self.assertFalse((root / '_site/marketplace-produtos.xml').exists())
 
     def test_validator_rejects_stale_meta_from_previous_catalog(self):
         snapshot = fixture()
