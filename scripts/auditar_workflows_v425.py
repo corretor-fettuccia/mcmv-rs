@@ -1,20 +1,34 @@
 #!/usr/bin/env python3
-"""Auditoria das rotinas GitHub Actions: não usa pacotes de terceiros."""
+"""Confere os cinco workflows essenciais sem acoplar o Core ao Marketplace."""
 from pathlib import Path
 import sys
-wf=Path(__file__).resolve().parents[1]/'.github'/'workflows'
-expect=['sinc-data.yml','make-feed-merchantcenter.yml','make-sitemap.yml','make-subpage.yml','core-imobiliario.yml','gerar-marketplace.yml']
-errors=[]
-for name in expect:
-    f=wf/name
-    if not f.is_file(): errors.append(f"AUSENTE: {f}");continue
-    s=f.read_text(encoding='utf-8')
-    if 'workflow_dispatch:' not in s: errors.append(f"SEM RUN WORKFLOW: {name}")
-    if name in ('sinc-data.yml','make-feed-merchantcenter.yml','make-sitemap.yml','make-subpage.yml') and 'workflow_call:' not in s: errors.append(f"SEM WORKFLOW_CALL: {name}")
-    print(f"OK {f.relative_to(wf.parent.parent)} (workflow_dispatch)")
-extras=sorted({f.name for f in wf.glob('*.yml')} - set(expect))
-if extras: errors.append('WORKFLOWS EXTRA: '+ ', '.join(extras))
+
+wf = Path(__file__).resolve().parents[1] / '.github' / 'workflows'
+essential = ('sinc-data.yml', 'make-feed-merchantcenter.yml', 'make-sitemap.yml',
+             'make-subpage.yml', 'core-imobiliario.yml')
+optional = 'gerar-marketplace.yml'
+errors = []
+for name in (*essential, optional):
+    path = wf / name
+    if name == optional and not path.is_file():
+        print('AVISO: Marketplace não instalado; o Core pode publicar normalmente.')
+        continue
+    if not path.is_file():
+        errors.append(f'AUSENTE: {path}')
+        continue
+    content = path.read_text(encoding='utf-8')
+    if 'workflow_dispatch:' not in content:
+        errors.append(f'SEM RUN WORKFLOW: {name}')
+    if name in essential[:4] and 'workflow_call:' not in content:
+        errors.append(f'SEM WORKFLOW_CALL: {name}')
+    print(f'OK {path.relative_to(wf.parent.parent)}')
+extras = sorted(({path.name for path in wf.glob('*.yml')} |
+                 {path.name for path in wf.glob('*.yaml')})
+                 - set((*essential, optional)))
+if extras:
+    errors.append('WORKFLOWS EXTRA: ' + ', '.join(extras))
 if errors:
-    for msg in errors:print('::error::'+msg)
+    for error in errors:
+        print('::error::' + error)
     sys.exit(1)
-print('OK: 5 workflows legados preservados + 1 workflow independente do Marketplace')
+print('OK: Core independente; Marketplace verificado quando instalado.')
