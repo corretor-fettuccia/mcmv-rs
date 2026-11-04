@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" name="viewport"/>
+<title>Minha Casa Minha Vida RS | Apartamentos e Casas à Venda </title>
+<meta name="description" content="Encontre seu imóvel pelo Minha Casa Minha Vida no Rio Grande do Sul. Pesquise por cidade, bairro e conheça opções de financiamento.">
+<style>
+    :root{--ink:#13243a;--teal:#087d77;--teal2:#11a497;--pale:#ebf7f4;--muted:#5c6d7e;--line:#dee8e7;--bg:#f4f7f7;--card:#fff;--gold:#efc87c}
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;background:var(--bg);font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:var(--ink)}
+    button,input,select,textarea{font:inherit}
+    button{cursor:pointer}
+    button:disabled{cursor:not-allowed;opacity:.6}
+    a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid #22bdb0;outline-offset:3px}
+    header{min-height:76px;background:white;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px max(20px,calc((100vw - 1200px)/2))}
+    .brand{font-weight:900;letter-spacing:-.8px;font-size:26px;line-height:1}.brand b{color:var(--teal)}
+    .brand small{display:block;letter-spacing:1.1px;font-size:9px;margin-top:8px;font-weight:800;color:var(--muted)}
+    nav{display:flex;gap:8px}nav button{background:transparent;color:#435669;border:1px solid transparent;border-radius:9px;padding:11px 16px;font-size:13px;font-weight:800}
+    nav button.active{color:var(--teal);background:var(--pale)}
+    .wrap{max-width:1200px;margin:auto;padding:34px 20px 70px}
+    .eyebrow{font-size:11px;letter-spacing:1.8px;font-weight:900;color:var(--teal);text-transform:uppercase}
+    h1{font-size:clamp(28px,4vw,40px);margin:8px 0 10px;letter-spacing:-1.3px}
+    h2{margin:0 0 12px;font-size:22px;letter-spacing:-.5px}
+    .subtitle{color:var(--muted);margin-top:0;line-height:1.65}
+    .grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:22px;align-items:start}
+    .panel{border:1px solid var(--line);background:#fff;border-radius:16px;padding:24px;box-shadow:0 9px 32px rgba(22,45,60,.035);min-width:0}
+    label{font-size:12px;display:block;font-weight:800;margin:17px 0 6px}
+    input,select,textarea{width:100%;border:1px solid #d3dedf;border-radius:9px;min-height:45px;padding:11px 13px;font-size:14px;color:var(--ink);background:#fff;outline:none}
+    input:focus,textarea:focus,select:focus{border-color:var(--teal2);box-shadow:0 0 0 3px #0a92831b}
+    textarea{resize:vertical;min-height:86px}.urlgroup{display:flex;gap:9px}.urlgroup input{flex:1;min-width:0}
+    .primary{background:var(--teal);border:1px solid var(--teal);color:white;border-radius:9px;padding:12px 18px;font-size:13px;font-weight:800;white-space:nowrap}.primary:hover{background:#08665f}
+    .secondary{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:9px;padding:11px 18px;font-size:13px;font-weight:800}.secondary:hover{background:#f2f7f7}
+    .status{font-size:13px;color:var(--muted);padding-top:9px;min-height:26px;line-height:1.5}.status.error{color:#b93636}.status.ok{color:#0b7f6d}
+    .twocol{display:grid;grid-template-columns:1fr 1fr;gap:14px}.small{font-size:12px;color:var(--muted);line-height:1.55}
+    .imagebox{height:225px;background:linear-gradient(130deg,#d9e8e6,#f1f6f5);border-radius:13px;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;color:#748b8b;font-size:13px;text-align:center;padding:15px}
+    .imagebox img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+    .card{overflow:hidden;min-width:0;display:flex;flex-direction:column;border-radius:15px;border:1px solid var(--line);box-shadow:0 12px 30px #172f4010;background:#fff;transition:transform .22s ease,box-shadow .22s ease}
+    .card:hover{transform:translateY(-3px);box-shadow:0 16px 35px #172f4020}
+    .cardmedia{height:200px;background:linear-gradient(135deg,#ccdeda,#e7ece9);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;color:#6c8a85;font-size:13px}
+    .cardmedia img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+    .badge{position:absolute;top:14px;left:14px;color:#12514c;background:#e3fcf3;padding:8px 12px;border-radius:7px;font-size:11px;font-weight:800;box-shadow:0 3px 10px #21382b1c}
+    .exampleflag{position:absolute;bottom:12px;right:12px;padding:5px 8px;font-size:10px;border-radius:6px;background:#14283edb;color:#fff;letter-spacing:.3px;font-weight:700}
+    .cardbody{padding:19px 20px 20px;display:flex;flex-direction:column;flex:1}
+    .cardbody h3{margin:0;font-size:20px;letter-spacing:-.6px;line-height:1.25}
+    .location{display:flex;align-items:center;gap:5px;color:var(--teal);font-weight:800;font-size:12px;margin-top:10px;line-height:1.35}
+    .location svg{width:14px;height:14px;flex:none}
+    .cardbody .detail{font-size:13px;color:#546978;line-height:1.5;margin:10px 0 16px;min-height:58px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
+    .divider{border-top:1px solid var(--line);padding-top:15px;display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:auto}
+    .price{font-size:17px;line-height:1.28;color:var(--teal);font-weight:900;overflow-wrap:anywhere}
+    .price small{display:block;font-size:9px;letter-spacing:.5px;color:#7b8c9b;font-weight:700;margin-bottom:4px}
+    .cardbtn{background:var(--ink);color:white;border:0;border-radius:8px;padding:11px 12px;text-decoration:none;font-size:12px;font-weight:800;white-space:nowrap;display:inline-flex;align-items:center;justify-content:center}
+    .cardbtn[aria-disabled="true"]{background:#d9e4e5;color:#647683;cursor:default;pointer-events:none}
+    .meta{background:var(--pale);border:1px solid #d8eeeb;border-radius:10px;padding:12px;margin-top:14px;font-size:12px;word-break:break-word;color:#4e6468;line-height:1.6}
+    .actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}.actions button{flex:0 0 auto}
+    .hero{border-radius:20px;background:radial-gradient(circle at 96% 8%,#187f79,#113f52 50%,#102c46);color:#fff;padding:55px 47px;margin-bottom:26px;position:relative;overflow:hidden}
+    .hero:after{content:"";width:340px;height:340px;border:1px solid #ffffff18;position:absolute;right:-80px;top:-140px;border-radius:50%;pointer-events:none}
+    .hero h1{position:relative;max-width:730px;font-size:clamp(31px,4vw,49px);line-height:1.15;margin-top:11px}
+    .hero p{color:#c8e9e5;max-width:660px;line-height:1.65;position:relative}
+    .tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;margin-top:22px}
+    .recorditem{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-top:1px solid var(--line);gap:10px}.recorditem>span{min-width:0}
+    .mutebtn{border:0;background:none;color:var(--teal);cursor:pointer;font-weight:800;padding:8px 6px}
+    .footnote{margin-top:28px;color:var(--muted);font-size:12px;line-height:1.55}.hidden{display:none!important}
+    .filters{background:#fff;padding:19px 21px;border:1px solid var(--line);border-radius:15px;margin-top:-2px;box-shadow:0 8px 30px #172f4006}
+    .filtergrid{display:grid;grid-template-columns:minmax(190px,1.6fr) repeat(3,minmax(0,1fr));gap:12px;align-items:end}
+    .filters label{margin:0 0 7px}.searchwrap{position:relative}.searchwrap svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:#789398;pointer-events:none}.searchwrap input{padding-left:41px}
+    .filtertail{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-top:13px}.filtertail p{font-size:13px;color:var(--muted);margin:0}.filtertail strong{color:var(--ink)}
+    .demoAlert{display:flex;align-items:flex-start;gap:10px;background:#fff9eb;border:1px solid #f0dfb9;color:#755d31;padding:13px 16px;border-radius:12px;font-size:12px;line-height:1.5;margin-bottom:20px}
+    .demoAlert strong{font-weight:900}.demoAlert svg{width:19px;height:19px;flex:none}
+    .demoToggle{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:750;color:var(--ink);cursor:pointer;margin:0}.demoToggle input{width:17px;height:17px;min-height:17px;accent-color:var(--teal)}
+    .listingheader{display:flex;justify-content:space-between;align-items:end;gap:16px;flex-wrap:wrap;margin-top:24px}.listingheader h2{margin:0}
+    .empty{border:1px dashed #c9d9d8;background:#fff;border-radius:12px;padding:34px;text-align:center;color:var(--muted);grid-column:1/-1}
+    .fallbackArtwork{width:100%;height:100%;position:absolute;inset:0}.fallbackArtwork svg{display:block;width:100%;height:100%;object-fit:cover}
+    .sectionlabel{font-size:10px;color:var(--muted);font-weight:900;letter-spacing:1.2px;text-transform:uppercase;margin:22px 0 6px}
+    .adminAnchor{font-size:12px;font-weight:800;color:var(--teal);text-decoration:none}
+    @media(max-width:950px){.filtergrid{grid-template-columns:1fr 1fr}.grid{grid-template-columns:1fr}.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:650px){header{padding:12px 16px;flex-wrap:wrap}.wrap{padding:25px 15px 50px}.tiles{grid-template-columns:1fr}.twocol,.filtergrid{grid-template-columns:1fr}.urlgroup{flex-direction:column}.urlgroup button{width:100%}.hero{padding:36px 25px}.panel{padding:18px}.filters{padding:16px}.divider{flex-wrap:wrap}.cardmedia{height:220px}.cardbody .detail{min-height:0}}
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.card{transition:none}.card:hover{transform:none}}
+  
+.campaignPin{position:absolute;top:14px;right:14px;background:#f5ba2c;color:#142c42;font-weight:900;padding:8px 12px;border-radius:8px;font-size:11px;max-width:60%;line-height:1.3}.campaignBanner{margin:0 0 12px;background:#fff2d5;color:#775004;padding:8px 12px;border-radius:9px;font-size:12px;font-weight:700}.loader{padding:35px;text-align:center;color:#426773}.cardmedia{position:relative}
+</style>
+<style>.simBox{margin:20px 0;background:white;border:1px solid #cddfe7;border-radius:17px;padding:23px;box-shadow:0 10px 30px #17394b0a}.simBox h2{margin:0 0 7px}.simGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:18px 0}.simGrid label{display:block;font-size:12px;font-weight:700;margin-bottom:6px}.simGrid input,.simGrid select{width:100%;box-sizing:border-box}.simActions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.simResult{margin-top:16px;padding:16px;background:#eff8f5;border-radius:12px;line-height:1.7}.matchTag{display:inline-block;background:#e4f5e9;color:#146442;border-radius:6px;padding:5px 8px;font-size:11px;font-weight:800;margin-top:9px}.matchTag.near{background:#fff1d6;color:#825700}.matchTag.no{background:#f4e9e9;color:#893b3b}@media(max-width:800px){.simGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:480px){.simGrid{grid-template-columns:1fr}}</style><style id="institutional-redesign">
+:root{--ink:#193247;--teal:#087d77;--teal2:#0d9184;--pale:#eaf4f1;--muted:#637583;--line:#e1e8e7;--bg:#f8faf9;--card:#fff}
+html{scroll-padding-top:92px}body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:-.01em} [hidden]{display:none!important}
+.siteHeader{max-width:none;min-height:86px;padding:14px max(24px,calc((100vw - 1240px)/2));box-shadow:0 1px 0 #e4ecea;position:relative;z-index:2}
+.brand{text-decoration:none;color:var(--ink);font-size:27px;letter-spacing:-1.4px;white-space:nowrap}.brand span,.siteFooter strong span{color:var(--teal)}.brand small{font-size:9px;letter-spacing:1.2px;margin-top:5px;font-weight:750}
+.siteHeader nav{display:flex;align-items:center;gap:30px}.siteHeader nav a{color:#415666;font-size:13px;font-weight:650;text-decoration:none}.siteHeader nav a:hover{color:var(--teal)}
+.wrap{max-width:1240px;padding:34px 24px 68px}.hero{min-height:350px;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(250px,.7fr);align-items:center;gap:30px;border-radius:12px;padding:50px 56px;background:linear-gradient(115deg,#12334b 0%,#174c57 75%,#1a6864 100%);margin-bottom:26px}
+.hero:after{display:none}.hero h1{font-size:clamp(32px,3.5vw,49px);line-height:1.14;letter-spacing:-1.6px;max-width:680px}.hero p{max-width:580px;font-size:15px;color:#d6e6e5}.hero .eyebrow{color:#a9e3d6;font-size:11px;letter-spacing:1.4px}.heroLink{display:inline-flex;align-items:center;gap:24px;margin-top:13px;padding:13px 17px;background:#fff;color:#183a48;border-radius:7px;text-decoration:none;font-size:13px;font-weight:800}.heroLink:hover{background:#e6f6f0}
+.heroVisual{display:flex;justify-content:center}.visualFrame{width:min(100%,300px);padding:24px 25px;border:1px solid #ffffff45;border-radius:12px;background:#ffffff13;backdrop-filter:blur(4px)}.visualTop{font-size:10px;letter-spacing:1.7px;font-weight:800;color:#a7dfd4;margin-bottom:14px}.visualLine{display:flex;align-items:center;gap:15px;border-top:1px solid #ffffff2a;padding:15px 0}.visualLine>span{color:#a9e3d6;font-size:13px}.visualLine strong{display:block;font-size:15px}.visualLine small{display:block;color:#d2e4e3;margin-top:4px;font-size:11px}
+.filters,.simBox{border-radius:12px;box-shadow:none;border:1px solid #e0e8e6}.filters{padding:26px 28px}.filters .eyebrow{font-size:12px;letter-spacing:.6px;text-transform:none}.filtergrid{grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}.filtergrid>div:nth-child(2){grid-column:span 2;grid-row:1}.filtergrid>div:nth-child(1){grid-column:1;grid-row:1}.filtergrid>div:nth-child(n+3){grid-row:2}.filters input,.filters select{height:48px;border-radius:7px;background:#fcfdfd}.filters label{font-size:12px;color:#405668}.filtertail{margin-top:20px;border-top:1px solid var(--line);padding-top:17px}
+.simBox{margin:0 0 22px;padding:25px 28px}.simBox h2{font-size:24px}.simBox>p{font-size:14px;color:var(--muted);line-height:1.6}.simActions button:not(.secondary),#runSim,#focusPlace{border:1px solid var(--teal);background:var(--teal);color:#fff;border-radius:7px;padding:12px 17px;font-weight:750;cursor:pointer}.simActions button.secondary{border-radius:7px}.simResult{background:#f0f7f5}
+.listingheader{margin:39px 0 18px}.listingheader h2{font-size:27px}.tiles{gap:20px;margin-top:0}.card{border-radius:10px;box-shadow:none}.card:hover{box-shadow:0 12px 28px #19324716}.cardmedia{height:200px}.cardbody{padding:20px}.cardbody h3{font-size:19px}.cardbody .detail{font-size:13px}.badge{border-radius:5px}.price{font-size:16px}.cardbtn{background:#153d4c;border-radius:6px}.cardbtn:hover{background:#087d77}
+.about{margin-top:60px;border-top:1px solid var(--line);padding:35px 0;display:grid;grid-template-columns:1fr 1fr;gap:50px;align-items:center}.about h2{font-size:26px;max-width:440px;margin-top:12px}.about p{color:var(--muted);font-size:14px;line-height:1.8;max-width:500px}.siteFooter{border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:30px;padding:28px 0}.siteFooter strong{font-size:22px;letter-spacing:-1px}.siteFooter .footnote{margin:10px 0 0;max-width:650px}.siteFooter a{color:var(--teal);font-size:12px;font-weight:750;text-decoration:none;white-space:nowrap}
+@media(max-width:850px){.hero{grid-template-columns:1fr;padding:42px 36px}.heroVisual{display:none}.siteHeader nav{gap:14px}.filtergrid{grid-template-columns:repeat(2,minmax(0,1fr))}.filtergrid>div:nth-child(1),.filtergrid>div:nth-child(2),.filtergrid>div:nth-child(n+3){grid-row:auto;grid-column:auto}.filtergrid>div:nth-child(2){grid-column:span 2}}
+@media(max-width:600px){.siteHeader{padding:18px}.siteHeader nav{width:100%;justify-content:space-between;gap:8px}.siteHeader nav a{font-size:11px}.wrap{padding:18px 16px 42px}.hero{padding:35px 25px;min-height:0}.hero h1{font-size:34px}.hero p{font-size:14px}.filters,.simBox{padding:20px 17px}.filtergrid{grid-template-columns:1fr}.filtergrid>div:nth-child(2){grid-column:auto}.listingheader{margin-top:32px}.about{grid-template-columns:1fr;gap:6px;margin-top:36px}.siteFooter{align-items:flex-start;flex-direction:column;gap:16px}.cardmedia{height:210px}}
+<style id="hero-blue-rs">
+.hero{background:#4a9bf3;min-height:440px;grid-template-columns:minmax(0,1fr) minmax(0,1fr);padding:42px 0 42px 52px;gap:0;isolation:isolate;overflow:hidden}
+.hero .eyebrow{color:#fff;letter-spacing:2px;font-size:11px;font-weight:800}
+.hero h1{color:white;font-size:clamp(39px,5vw,70px);font-weight:850;letter-spacing:-2.7px;line-height:1.02;margin:20px 0 20px;max-width:600px}
+.hero h1 span{color:#092e6e}.hero p{font-size:17px;line-height:1.55;color:#fff;max-width:475px}
+.heroLink{border-radius:100px;padding:16px 24px;font-size:14px;color:#092e6e;margin-top:16px;gap:25px;box-shadow:0 8px 24px #103b7922}
+.heroVisual{display:flex;align-items:center;justify-content:flex-end;min-width:0;align-self:stretch;position:relative;overflow:hidden}
+.heroVisual img{width:135%;max-width:none;height:100%;object-fit:cover;object-position:64% center;mix-blend-mode:normal;display:block}
+@media(max-width:850px){.hero{grid-template-columns:1fr 1fr;min-height:350px;padding:35px 0 35px 32px}.heroVisual{display:flex}.hero h1{font-size:clamp(36px,5.8vw,55px)}.hero p{font-size:14px}.heroVisual img{width:165%;object-position:59% center}}
+@media(max-width:600px){.hero{display:flex;flex-direction:column;min-height:0;padding:32px 22px 0}.hero h1{font-size:clamp(39px,10vw,58px);letter-spacing:-1.8px}.hero p{font-size:14px}.heroLink{margin-bottom:8px}.heroVisual{height:235px;width:calc(100% + 44px);margin:0 -22px;display:block}.heroVisual img{width:100%;height:100%;object-fit:cover;object-position:55% 40%}}
+</style></style><style id="hero-full-background-fix">
+/* Imagem original ocupa TODO o hero, sem coluna lateral ou recorte em cartões */
+.hero{display:flex!important;align-items:center!important;position:relative!important;isolation:isolate;min-height:clamp(420px,43vw,590px)!important;padding:clamp(30px,5vw,68px)!important;background:#4a9bf3 url("hero-mcmv-rs.png") center center / cover no-repeat!important;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;z-index:0;background:linear-gradient(90deg,rgba(5,37,95,.66) 0%,rgba(5,37,95,.43) 37%,rgba(5,37,95,0) 68%);pointer-events:none}
+.heroContent{position:relative;z-index:1;max-width:min(55%,650px)}
+.heroVisual{display:none!important}
+.hero h1{font-size:clamp(38px,5vw,68px);line-height:1.06;color:#fff;text-shadow:0 2px 16px #082a5440}
+.hero h1 span{color:#fff}.hero p{color:#fff;text-shadow:0 1px 8px #082a5455}
+@media(max-width:850px){.hero{min-height:440px!important;background-position:57% center!important}.heroContent{max-width:62%}.hero::before{background:linear-gradient(90deg,rgba(5,37,95,.8),rgba(5,37,95,.45) 58%,transparent)}}
+@media(max-width:600px){.hero{min-height:530px!important;padding:30px 23px!important;align-items:flex-start!important;background-position:60% center!important}.heroContent{max-width:100%}.hero::before{background:linear-gradient(180deg,rgba(5,37,95,.88) 0%,rgba(5,37,95,.67) 47%,rgba(5,37,95,.08) 100%)}.hero h1{font-size:clamp(36px,9vw,48px)}.hero p{max-width:340px}}
+</style>
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+<link rel="canonical" href="https://mcmv-rs.com.br/">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:site_name" content="Minha Casa Minha Vida RS">
+<meta property="og:title" content="Minha Casa Minha Vida RS | Apartamentos, Casas, Empreendimentos.">
+<meta property="og:description" content="Pesquise imóveis pelo Minha Casa Minha Vida no RS. Encontre apartamentos e casas à venda, filtre por cidade e bairro e simule seu poder de compra pela renda familiar.">
+<meta property="og:url" content="https://mcmv-rs.com.br/">
+<meta property="og:image" content="https://mcmv-rs.com.br/hero-mcmv-rs.png">
+<meta property="og:image:alt" content="Minha Casa Minha Vida RS: portal de busca, encontre seu MCMV no RS agora!">
+<!-- Favicon principal -->
+<link rel="icon" type="image/png" sizes="32x32" href="https://mcmv-rs.com.br/icon.jpeg">
+<!-- Ícone para dispositivos Apple -->
+<link rel="apple-touch-icon" sizes="180x180" href="https://mcmv-rs.com.br/icon.jpeg">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#489cf5">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://mcmv-rs.com.br/#website","url":"https://mcmv-rs.com.br/","name":"Minha Casa Minha Vida RS","inLanguage":"pt-BR","description":"PORTAL Minha Casa Minha Vida - RS para busca de empreendimentos no Rio Grande do Sul."},{"@type":"WebPage","@id":"https://mcmv-rs.com.br/#webpage","url":"https://mcmv-rs.com.br/","name":"Minha Casa Minha Vida RS | Apartamentos e Empreendimentos","isPartOf":{"@id":"https://mcmv-rs.com.br/#website"},"inLanguage":"pt-BR","about":{"@type":"Thing","name":"Minha Casa Minha Vida"}}]}
+</script>
+
+<style id="mobile-responsive-refinement">
+/* Exclusivamente mobile/tablet: preservar a composição desktop aprovada. */
+@media (max-width:850px){
+  html,body{width:100%;max-width:100%;overflow-x:clip;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+  .siteHeader,.wrap,.hero,.simBox,.filters,.tiles,.about,.siteFooter{min-width:0;max-width:100%}
+  img,svg,video,iframe{max-width:100%}
+  .siteHeader{box-sizing:border-box;flex-wrap:wrap;row-gap:14px}
+  .siteHeader .brand{min-width:0;white-space:normal}
+  .siteHeader nav{min-width:0;flex-wrap:wrap;justify-content:flex-start}
+  .siteHeader nav a{line-height:1.4;min-height:40px;display:inline-flex;align-items:center}
+  .heroContent{min-width:0}
+  .hero h1{overflow-wrap:normal}
+  .simBox,.filters{min-width:0}
+  .simGrid,.filtergrid,.tiles{min-width:0}
+  .simActions{display:flex;flex-wrap:wrap;gap:10px}
+  .simActions button{min-height:44px;white-space:normal;line-height:1.35}
+  .cardbody,.cardbody>*{min-width:0}
+  .cardbody h3,.location,.about p,.footnote{overflow-wrap:anywhere}
+  .divider{min-width:0;flex-wrap:wrap;row-gap:12px}
+  .siteFooter{flex-wrap:wrap}
+}
+@media (max-width:600px){
+  .siteHeader{padding:15px 16px;gap:12px}
+  .siteHeader .brand{font-size:clamp(22px,6vw,27px);line-height:1.1}
+  .siteHeader .brand small{font-size:9px;letter-spacing:.7px;line-height:1.35}
+  .siteHeader nav{width:100%;gap:6px 15px;justify-content:flex-start}
+  .siteHeader nav a{font-size:12px;padding:4px 0}
+  .wrap{padding:16px 14px 38px}
+  .hero{border-radius:12px;margin-bottom:16px;min-height:480px!important;padding:28px 22px 30px!important;background-position:59% center!important}
+  .hero::before{background:linear-gradient(180deg,rgba(5,37,95,.91) 0%,rgba(5,37,95,.70) 44%,rgba(5,37,95,.12) 100%)}
+  .hero .eyebrow{font-size:10px;letter-spacing:1.2px;line-height:1.5}
+  .hero h1{font-size:clamp(32px,9.1vw,45px);line-height:1.08;letter-spacing:-1.35px;margin:14px 0 12px}
+  .hero p{font-size:clamp(13px,3.65vw,15px);line-height:1.55;margin:0;max-width:32ch}
+  .heroLink{font-size:13px;padding:12px 18px;min-height:46px;margin-top:16px;margin-bottom:0;gap:12px}
+  .simBox,.filters{padding:19px 16px;margin-bottom:16px;border-radius:11px}
+  .simBox h2,.filters h2{font-size:clamp(20px,5.6vw,24px);line-height:1.25;letter-spacing:-.4px}
+  .simBox>p,.filters p{font-size:14px;line-height:1.55}
+  .simActions{gap:9px;margin-top:13px}
+  .simActions button{flex:1 1 100%;padding:12px 14px}
+  .simGrid{display:grid!important;grid-template-columns:minmax(0,1fr)!important}
+  .filtergrid{display:grid;grid-template-columns:minmax(0,1fr)!important;gap:12px}
+  .filtergrid>div{grid-column:auto!important;grid-row:auto!important;min-width:0}
+  label,.filters label{font-size:13px;line-height:1.4;margin-bottom:7px}
+  input:not([type=checkbox]),select,textarea{font-size:16px;min-height:46px;max-width:100%}
+  .filtertail{gap:12px;margin-top:15px;padding-top:14px}
+  .listingheader{margin:26px 0 14px;gap:9px}
+  .listingheader h2{font-size:clamp(21px,5.8vw,26px);line-height:1.2}
+  .tiles{grid-template-columns:minmax(0,1fr);gap:14px}
+  .cardmedia{height:clamp(185px,55vw,235px)}
+  .cardbody{padding:17px}
+  .cardbody h3{font-size:19px;line-height:1.28}
+  .cardbody .detail{font-size:13px;line-height:1.55;min-height:0;margin:9px 0 13px}
+  .divider{gap:12px;align-items:center}
+  .cardbtn{min-height:44px;padding:11px 15px}
+  .about{margin-top:30px;padding:24px 0 16px;gap:8px}
+  .about h2{font-size:clamp(21px,6vw,25px);line-height:1.25}
+  .about p{font-size:14px;line-height:1.65}
+  .siteFooter{padding:20px 0;gap:12px}
+  .siteFooter .footnote{font-size:12px;line-height:1.6}
+}
+@media (max-width:360px){
+  .wrap{padding-left:12px;padding-right:12px}
+  .hero{padding:25px 17px 26px!important;min-height:455px!important}
+  .hero h1{font-size:32px;letter-spacing:-1px}
+  .hero p{font-size:13px}
+  .simBox,.filters{padding:17px 13px}
+  .siteHeader nav{gap:4px 12px}
+  .siteHeader nav a{font-size:11px}
+}
+</style>
+<style id="mobile-compact-v2">
+/* ==========================================================================
+   MOBILE COMPACTO (somente <=600px). Desktop/tablet NÃO são afetados.
+   Meta: ~1/3 dos espaços anteriores e lista de imóveis em cartões horizontais
+   (miniatura à esquerda + dados à direita), mostrando 3-4 opções por tela.
+   Não altera app.js, config.js nem o motor Apps Script.
+   ========================================================================== */
+@media (max-width:600px){
+  html{scroll-padding-top:8px}
+  body{font-size:14px}
+
+  /* Cabeçalho: 2 linhas curtas (marca + links) */
+  .siteHeader{min-height:0;padding:8px 12px;gap:2px 12px;row-gap:2px}
+  .siteHeader .brand{font-size:20px;letter-spacing:-1px;line-height:1}
+  .siteHeader .brand small{font-size:8px;letter-spacing:.5px;margin-top:2px;line-height:1.2}
+  .siteHeader nav{gap:2px 14px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+  .siteHeader nav::-webkit-scrollbar{display:none}
+  .siteHeader nav a{font-size:12px;min-height:30px;padding:0;white-space:nowrap}
+
+  .wrap{padding:8px 10px 24px}
+
+  /* Hero: mesma imagem e texto, bem mais baixo */
+  .hero{min-height:230px!important;padding:16px 16px 18px!important;margin-bottom:8px;border-radius:10px;align-items:flex-end!important}
+  .hero::before{background:linear-gradient(180deg,rgba(5,37,95,.82) 0%,rgba(5,37,95,.62) 55%,rgba(5,37,95,.35) 100%)}
+  .hero .eyebrow{font-size:9px;letter-spacing:.9px}
+  .hero h1{font-size:clamp(26px,8vw,32px);letter-spacing:-1px;line-height:1.05;margin:6px 0 6px}
+  .hero p{font-size:12.5px;line-height:1.4;max-width:36ch}
+  .heroLink{font-size:12px;padding:8px 14px;min-height:36px;margin-top:10px;gap:10px}
+
+  /* Caixa "Como deseja pesquisar?" */
+  .simBox,.filters{padding:12px;margin-bottom:8px;border-radius:10px}
+  .simBox .eyebrow{font-size:9px;letter-spacing:.9px}
+  .simBox h2{font-size:17px;margin:2px 0 3px}
+  .simBox>p,#placePanel p{font-size:12.5px;line-height:1.4;margin:0 0 8px}
+  .simActions{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+  .simActions button{flex:none;min-height:38px;padding:7px 8px;font-size:12px;line-height:1.25}
+  #focusPlace{width:100%;min-height:38px;padding:7px 10px;font-size:12px}
+  #incomePanel .simGrid{grid-template-columns:minmax(0,1fr)!important;margin:8px 0 6px;gap:0}
+  .simGrid label{margin:0 0 3px;font-size:12px}
+  .simResult{margin-top:8px;padding:9px 10px;font-size:12.5px;line-height:1.45;border-radius:9px}
+
+  /* Filtros: grade 2 colunas, busca ocupa a linha toda */
+  #filterTitle{margin-bottom:6px!important;font-size:10px;letter-spacing:.6px}
+  .filters .filtergrid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px 8px}
+  .filters .filtergrid>div{min-width:0}
+  .filters .filtergrid>div:nth-child(2){grid-column:1/-1!important;order:-1}
+  .filters label{font-size:11px;margin:0 0 2px;line-height:1.3}
+  .filters input,.filters select,input:not([type=checkbox]),select{min-height:38px;height:38px;padding:6px 10px;border-radius:7px}
+  .searchwrap input{padding-left:34px}
+  .searchwrap svg{left:10px;width:16px;height:16px}
+  .filtertail{display:flex;flex-wrap:nowrap;justify-content:space-between;align-items:center;gap:8px;margin-top:8px;padding-top:8px}
+  .filtertail p{font-size:12px;line-height:1.3}
+  .filtertail .secondary{padding:6px 10px;min-height:34px;font-size:12px;white-space:nowrap}
+
+  /* Cabeçalho da lista */
+  .listingheader{margin:12px 0 6px}
+  .listingheader .eyebrow{display:none}
+  .listingheader h2{font-size:18px;line-height:1.2;margin:0}
+
+  /* Lista: cartões horizontais compactos */
+  .tiles{gap:8px;margin-top:0}
+  .tiles .card{display:grid;grid-template-columns:104px minmax(0,1fr);border-radius:9px;transition:none}
+  .tiles .card:hover{transform:none;box-shadow:none}
+  .tiles .card .cardmedia{height:auto;min-height:96px}
+  .tiles .card .badge{top:5px;left:5px;padding:2px 6px;font-size:9px;line-height:1.25;border-radius:4px;max-width:calc(100% - 10px);box-shadow:none}
+  .tiles .card .campaignPin{top:auto;right:0;bottom:0;left:0;max-width:none;border-radius:0;padding:3px 5px;font-size:9px;line-height:1.2;text-align:center}
+  .tiles .card .cardbody{padding:8px 10px 8px}
+  .tiles .card h3{font-size:15px;letter-spacing:-.3px;line-height:1.2;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+  .tiles .card .location{font-size:11px;margin-top:3px;gap:3px;line-height:1.25}
+  .tiles .card .location svg{width:12px;height:12px}
+  .tiles .card .campaignBanner{margin:4px 0 0;padding:3px 8px;font-size:11px;line-height:1.3;border-radius:6px}
+  .tiles .card .detail{font-size:12px;line-height:1.35;margin:4px 0 6px;min-height:0;-webkit-line-clamp:2}
+  .tiles .card .divider{flex-wrap:nowrap;gap:8px;padding-top:6px;margin-top:auto;border-top:1px solid var(--line)}
+  .tiles .card .price{font-size:14px;line-height:1.2;min-width:0;flex:1}
+  .tiles .card .price small{font-size:8px;margin-bottom:1px;letter-spacing:.3px}
+  .tiles .card .cardbtn{min-height:34px;padding:6px 10px;font-size:12px;flex:none}
+  .empty{padding:18px 12px;font-size:13px}.loader{padding:18px}
+
+  /* Rodapé / sobre */
+  .about{margin-top:16px;padding:14px 0 8px;gap:4px}
+  .about h2{font-size:18px;margin:6px 0 0}
+  .about p{font-size:13px;line-height:1.5;margin:0}
+  .siteFooter{padding:12px 0;gap:8px}
+  .siteFooter strong{font-size:18px}
+  .siteFooter .footnote{margin-top:4px;font-size:11px;line-height:1.45}
+}
+@media (max-width:360px){
+  .wrap{padding-left:8px;padding-right:8px}
+  .tiles .card{grid-template-columns:88px minmax(0,1fr)}
+  .tiles .card h3{font-size:14px}
+  .tiles .card .price{font-size:13px}
+  .hero h1{font-size:26px}
+}
+
+/* Core V4.1.7 — filtros por atributos, sem modificar a grade principal */
+.attributeArea{margin-top:16px;padding-top:16px;border-top:1px solid var(--line,#dce6e9)}
+.attributeHeader{display:flex;align-items:baseline;gap:8px 18px;flex-wrap:wrap;margin-bottom:9px}
+.attributeHeader strong{font-size:14px;color:var(--ink,#213a4b)}
+.attributeHeader span{font-size:12px;color:var(--muted,#657e8a)}
+.attributeOptions{display:flex;flex-wrap:wrap;align-items:center;gap:9px}
+.attributeChoice{display:inline-flex;align-items:center;gap:8px;margin:0!important;padding:8px 11px;border:1px solid #d7e2e7;border-radius:9px;background:#f9fcfd;cursor:pointer;line-height:1.3;font-size:13px!important;color:#254455;max-width:100%;min-height:36px}
+.attributeChoice:has(input:checked){border-color:#0f7c80;background:#e9f6f4;color:#14525a}
+.attributeChoice input[type=checkbox]{width:16px;height:16px;min-height:16px;margin:0;accent-color:#087c81;flex-shrink:0}
+.attributeCount{font-size:11px;color:#617c89;background:#edf2f4;padding:2px 6px;border-radius:999px;font-variant-numeric:tabular-nums}
+.attributeEmpty{margin:0;font-size:13px;color:var(--muted,#657e8a)}
+.attributeDiagnostic{font-size:11px;color:#617c89;margin:8px 0 2px;line-height:1.4}
+#attributeArea{display:block!important;visibility:visible!important}
+.cardbtn.is-disabled{opacity:.55;cursor:not-allowed}
+@media(max-width:600px){.attributeHeader{display:block}.attributeHeader span{display:block;margin-top:4px}.attributeOptions{gap:7px}.attributeChoice{font-size:12px!important;padding:8px 9px}}
+</style>
+<style id="vitrine-hover-gallery-v9">
+/* MCMV-RS V9 · Carrossel de fotos nos cards, com a mesma interação do Imoplace. */
+.cardmedia .cardSlide{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;opacity:0;z-index:0;transition:opacity .4s ease;pointer-events:none}
+.cardmedia .cardSlide.is-active{opacity:1;z-index:1}
+.cardmedia .fallbackArtwork{z-index:0}
+.cardmedia .badge,.cardmedia .campaignPin{z-index:4}
+.cardmedia .cardGalleryCount{position:absolute;right:9px;bottom:9px;z-index:3;border-radius:5px;padding:2px 6px;background:rgba(13,35,44,.67);color:#fff;font-size:10px;font-weight:750;line-height:1.45;pointer-events:none;opacity:0;transition:opacity .2s}
+.cardmedia .cardGalleryDots{position:absolute;left:10px;bottom:12px;z-index:3;display:flex;gap:4px;align-items:center;pointer-events:none;opacity:0;transition:opacity .2s}
+.cardmedia .cardGalleryDots i{display:block;width:6px;height:6px;border-radius:9px;background:rgba(255,255,255,.68);box-shadow:0 1px 2px #0004;transition:width .25s ease,background-color .25s ease}
+.cardmedia .cardGalleryDots i.is-active{width:16px;background:#fff}
+.card:hover .cardGalleryCount,.card:focus-within .cardGalleryCount,.card:hover .cardGalleryDots,.card:focus-within .cardGalleryDots{opacity:1}
+@media(max-width:600px){.cardmedia .cardGalleryDots{display:none}.cardmedia .cardGalleryCount{right:5px;bottom:5px;font-size:9px;padding:1px 4px}.cardmedia.hasCampaign .cardGalleryCount{display:none}}
+@media(prefers-reduced-motion:reduce){.cardmedia .cardSlide,.cardmedia .cardGalleryDots i,.cardmedia .cardGalleryDots,.cardmedia .cardGalleryCount{transition:none}}
+</style>
+<style id="busca-abas">
+/* ==========================================================================
+   MCMV-RS · BUSCA EM ABAS (Renda | Localização) + FILTROS COMPACTOS/RETRÁTEIS
+   Layout aprovado. Somente CSS + o script de busca em abas no fim do <body>.
+   Não altera app.js, config.js, IDs nem a estrutura usada pelo motor.
+   Sem o script, a página volta ao layout anterior (tudo aberto).
+   Para reverter: apague este <style> e o script "busca-abas-js".
+   Estrutura: abas (Renda | Localização) > conteúdo da aba > filtros.
+   Filtros GLOBAIS (as duas abas): Situação e Características (recolhível).
+   Filtros EXCLUSIVOS da aba Localização: busca + Região, Cidade e Bairro (recolhível).
+   Índice: 1) Painel de filtros  2) Abas Renda | Localização
+   ========================================================================== */
+
+/* ---------- 1) PAINEL DE FILTROS (aba Localização) ---------- */
+#busca.filters{position:relative;background:#fff;border:1px solid #dde7e5;border-radius:14px;padding:14px 16px 12px;box-shadow:0 6px 22px rgba(19,50,71,.05)}
+#busca #filterTitle,#busca label[for=search]{position:absolute!important;width:1px;height:1px;margin:0!important;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+/* Grade (filhos: 1 Região · 2 Busca · 3 Cidade · 4 Bairro · 5 Situação · 6 botões)
+   Linha 1: [Busca .........][Situação][Região e cidade ▾][Características ▾]
+   Linha 2 (recolhível, só Localização): [Região][Cidade][Bairro]                */
+#busca .filtergrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) auto!important;gap:10px!important;align-items:end}
+#busca .filtergrid>div{order:0!important;min-width:0}
+#busca .filtergrid>div:nth-child(2){grid-column:1/3!important;grid-row:1!important}
+#busca .filtergrid>div:nth-child(5){grid-column:3!important;grid-row:1!important}
+#busca .filtergrid>.mcmvToggles{grid-column:4;grid-row:1}
+#busca .filtergrid>div:nth-child(1){grid-column:1!important;grid-row:2!important}
+#busca .filtergrid>div:nth-child(3){grid-column:2!important;grid-row:2!important}
+#busca .filtergrid>div:nth-child(4){grid-column:3!important;grid-row:2!important}
+#busca .mcmvToggles{display:flex;gap:8px}
+#busca .filtergrid label{font-size:10.5px;font-weight:800;letter-spacing:.35px;text-transform:uppercase;color:#5b7080;margin:0 0 4px}
+
+/* Busca */
+#busca .searchwrap input{height:42px!important;min-height:42px;font-size:15px;padding-left:44px;border:1.5px solid #d4e0df;border-radius:11px;background:#f6f9f9;transition:border-color .15s,box-shadow .15s,background-color .15s}
+#busca .searchwrap input:focus{background:#fff;border-color:var(--teal);box-shadow:0 0 0 4px rgba(8,125,119,.12)}
+#busca .searchwrap svg{left:15px;width:19px;height:19px;color:var(--teal)}
+
+/* Botões recolhíveis: Região e cidade (só Localização) · Características (global) */
+#busca .lblShort{display:none}
+#busca .mcmvFilterToggle{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:8px;height:42px;padding:0 14px;border:1.5px solid #d4e0df;border-radius:11px;background:#fff;color:var(--ink);font-size:13.5px;font-weight:750;white-space:nowrap;transition:border-color .15s,background-color .15s}
+#busca .mcmvFilterToggle:hover{border-color:#9fc5c1;background:#f4faf9}
+#busca .mcmvFilterToggle[aria-expanded="true"]{border-color:var(--teal);background:var(--pale);color:#0b5f5a}
+#busca .mcmvFilterToggle svg{width:17px;height:17px;flex:none}
+#busca .mcmvFilterToggle .mcmvChevron{width:14px;height:14px;transition:transform .2s}
+#busca .mcmvFilterToggle[aria-expanded="true"] .mcmvChevron{transform:rotate(180deg)}
+#busca .mcmvBadge{min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:var(--teal);color:#fff;font-size:11px;font-weight:800;display:inline-flex;align-items:center;justify-content:center}
+
+/* Selects compactos */
+#busca .filtergrid select{-webkit-appearance:none;appearance:none;height:42px!important;min-height:42px;padding:0 32px 0 11px;border:1.5px solid #dbe5e4;border-radius:10px;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235b7080' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") right 11px center/14px no-repeat;font-size:13.5px;font-weight:600;color:var(--ink);cursor:pointer;text-overflow:ellipsis;white-space:nowrap;overflow:hidden}
+#busca .filtergrid select:focus{border-color:var(--teal);box-shadow:0 0 0 4px rgba(8,125,119,.12)}
+#busca .filtergrid select:not(:has(option[value=""]:checked)){border-color:var(--teal);background-color:#effaf7;color:#0b5f5a}
+#busca .filtergrid div:has(>select:not(:has(option[value=""]:checked)))>label{color:var(--teal)}
+
+/* Características: pílulas */
+#busca .attributeArea{margin-top:12px;padding-top:11px;border-top:1px dashed #d6e2e0}
+#busca .attributeHeader{margin-bottom:8px;gap:4px 12px}
+#busca .attributeHeader strong{font-size:13px;font-weight:800}
+#busca .attributeHeader span{font-size:11.5px}
+#busca .attributeOptions{gap:6px}
+#busca .attributeChoice{position:relative;border-radius:999px;padding:5px 11px 5px 8px;min-height:32px;border:1.5px solid #dbe5e4;background:#fff;font-weight:650;font-size:12.5px!important;color:#2a4757;gap:6px;transition:border-color .15s,background-color .15s,color .15s}
+#busca .attributeChoice:hover{border-color:#9fc5c1;background:#f4faf9}
+#busca .attributeChoice input[type=checkbox]{position:absolute;opacity:0;width:1px;height:1px;min-height:0;pointer-events:none}
+#busca .attributeChoice::before{content:"+";display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;flex:none;border-radius:50%;background:var(--pale);color:var(--teal);font-size:13px;font-weight:900;line-height:1}
+#busca .attributeChoice:has(input:checked){border-color:var(--teal);background:var(--teal);color:#fff}
+#busca .attributeChoice:has(input:checked)::before{content:"✓";background:#fff;color:var(--teal);font-size:10px}
+#busca .attributeChoice:has(input:checked) .attributeCount{background:rgba(255,255,255,.22);color:#fff}
+#busca .attributeChoice:has(input:focus-visible){outline:3px solid #22bdb0;outline-offset:2px}
+#busca .attributeCount{font-size:10.5px;padding:1px 6px;background:#eef3f4;font-weight:700}
+#busca .attributeDiagnostic{font-size:10px;color:#93a4ad;margin:6px 0 0}
+
+/* Resumo dos filtros ativos (aparece com o painel fechado) */
+#busca .mcmvActive{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+#busca .mcmvActive button{display:inline-flex;align-items:center;gap:6px;border:1px solid #b9dcd7;background:#effaf7;color:#0b5f5a;border-radius:999px;padding:4px 6px 4px 11px;font-size:12px;font-weight:700;line-height:1.2;max-width:100%}
+#busca .mcmvActive button span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#busca .mcmvActive button i{font-style:normal;width:18px;height:18px;border-radius:50%;background:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:13px;flex:none}
+#busca .mcmvActive button:hover{border-color:#c25b5b;color:#a33d3d}
+
+/* Rodapé enxuto */
+#busca .filtertail{margin-top:10px;padding:9px 0 0;border-top:1px solid #e7eeed;background:none;display:flex;flex-wrap:nowrap;align-items:center;justify-content:space-between;gap:10px}
+#busca .filtertail p{font-size:13px;font-weight:600;color:#4a6271;line-height:1.3}
+#busca .filtertail strong{color:var(--teal)}
+#busca #resetFilters{display:inline-flex;align-items:center;gap:5px;border:0;background:none;padding:6px 4px;min-height:30px;font-size:12.5px;font-weight:750;color:#5b7080;white-space:nowrap}
+#busca #resetFilters::before{content:"↺";font-size:14px;line-height:1}
+#busca #resetFilters:hover{color:#a33d3d;background:none}
+
+/* Estados RECOLHIDOS (cada botão controla o seu grupo) */
+#busca.loc-collapsed .filtergrid>div:nth-child(1),
+#busca.loc-collapsed .filtergrid>div:nth-child(3),
+#busca.loc-collapsed .filtergrid>div:nth-child(4){display:none!important}
+#busca.attr-collapsed #attributeArea,
+#busca.attr-collapsed #attributeDiagnostic{display:none!important}
+#busca .mcmvActive[hidden]{display:none!important}
+@keyframes mcmvIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+#busca.is-ready:not(.loc-collapsed) .filtergrid>div:nth-child(1),
+#busca.is-ready:not(.loc-collapsed) .filtergrid>div:nth-child(3),
+#busca.is-ready:not(.loc-collapsed) .filtergrid>div:nth-child(4),
+#busca.is-ready:not(.attr-collapsed) #attributeArea{animation:mcmvIn .2s ease}
+
+/* Tablet e celular */
+@media(max-width:700px){
+  /* [Busca ............] / [Situação][Local][Extras] / [Região][Cidade] / [Bairro] */
+  #busca .filtergrid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  #busca .filtergrid>div:nth-child(2){grid-column:1/-1!important;grid-row:1!important}
+  #busca .filtergrid>div:nth-child(5){grid-column:1!important;grid-row:2!important}
+  #busca .filtergrid>.mcmvToggles{grid-column:2;grid-row:2}
+  #busca .filtergrid>div:nth-child(1){grid-column:1!important;grid-row:3!important}
+  #busca .filtergrid>div:nth-child(3){grid-column:2!important;grid-row:3!important}
+  #busca .filtergrid>div:nth-child(4){grid-column:1/-1!important;grid-row:4!important}
+  #busca .mcmvToggles .mcmvFilterToggle{flex:1 1 0;min-width:0;padding:0 8px;gap:5px}
+  #busca .mcmvFilterToggle .mcmvChevron{display:none}
+  #busca .lblLong{display:none}#busca .lblShort{display:inline}
+  #busca .mcmvFilterToggle .mcmvBadge{position:absolute;top:-7px;right:-5px;min-width:18px;height:18px;font-size:10px;padding:0 5px;box-shadow:0 0 0 2px #fff}
+}
+@media(max-width:600px){
+  #busca.filters{padding:10px;border-radius:12px;margin-bottom:8px}
+  #busca .filtergrid{gap:8px!important}
+  #busca .filtergrid label{font-size:10px;margin:0 0 3px}
+  #busca .searchwrap input{height:42px!important;min-height:42px;font-size:16px;padding-left:40px;border-radius:10px}
+  #busca .searchwrap svg{left:12px;width:17px;height:17px}
+  #busca .mcmvFilterToggle{border-radius:10px;font-size:12.5px}
+  #busca .filtergrid select{height:42px!important;font-size:14px;padding:0 28px 0 9px;background-position:right 8px center;background-size:13px}
+  #busca .attributeHeader{display:flex;align-items:baseline}
+  #busca .attributeHeader span{display:inline;margin:0}
+  #busca .attributeOptions{flex-wrap:nowrap;overflow-x:auto;margin:0 -10px;padding:2px 10px 4px;scroll-snap-type:x proximity;scrollbar-width:none;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 10px,#000 calc(100% - 22px),transparent);mask-image:linear-gradient(90deg,transparent 0,#000 10px,#000 calc(100% - 22px),transparent)}
+  #busca .attributeOptions::-webkit-scrollbar{display:none}
+  #busca .attributeChoice{flex:none;white-space:nowrap;scroll-snap-align:start}
+  #busca .attributeEmpty{white-space:normal}
+  #busca .mcmvActive{margin-top:8px}
+  #busca .filtertail{margin-top:8px;padding-top:7px}
+  #busca .filtertail p{font-size:12px}
+}
+@media(max-width:340px){#busca .mcmvFilterToggle .mcmvLabel{display:none}}
+@media(prefers-reduced-motion:reduce){#busca *{transition:none!important;animation:none!important}}
+
+/* ---------- 2) ABAS RENDA | LOCALIZAÇÃO ---------- */
+#simulator[data-mode]{padding:12px 14px 14px;margin:0 0 22px;border:1px solid #dde7e5;border-radius:14px;background:#fff;box-shadow:0 6px 22px rgba(19,50,71,.05)}
+#simulator[data-mode]>.eyebrow,#simulator[data-mode]>p,#simulator[data-mode] #placePanel{display:none!important}
+#simulator[data-mode]>h2{position:absolute!important;width:1px;height:1px;margin:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* Abas */
+#simulator[data-mode]>.simActions{display:grid!important;grid-template-columns:1fr 1fr;gap:4px;margin:0;padding:4px;background:#eef3f3;border-radius:11px}
+#simulator[data-mode]>.simActions button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;padding:8px 12px;border:0!important;border-radius:8px!important;background:transparent!important;color:#5b7080!important;font-size:13.5px;font-weight:750;line-height:1.2;box-shadow:none;transition:background-color .15s,color .15s,box-shadow .15s}
+#simulator[data-mode]>.simActions button:hover{color:var(--ink)!important}
+#simulator[data-mode]>.simActions button::before{content:"";width:17px;height:17px;flex:none;background:center/contain no-repeat}
+#modeIncome::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23087d77' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='6' width='18' height='13' rx='2'/%3E%3Ccircle cx='12' cy='12.5' r='2.5'/%3E%3Cpath d='M7 6V4.5M17 6V4.5'/%3E%3C/svg%3E")!important}
+#modePlace::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23087d77' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z'/%3E%3Ccircle cx='12' cy='9.5' r='2.5'/%3E%3C/svg%3E")!important}
+#simulator[data-mode=income] #modeIncome,#simulator[data-mode=place] #modePlace{background:#fff!important;color:var(--teal)!important;box-shadow:0 1px 3px rgba(19,50,71,.12)}
+
+/* Aba RENDA: campo + botões numa linha só */
+#simulator[data-mode=income] #incomePanel{display:grid!important;grid-template-columns:minmax(0,1fr) auto;gap:8px 10px;align-items:end;margin-top:12px}
+#simulator[data-mode] #incomePanel .simGrid{grid-template-columns:minmax(0,1fr)!important;margin:0!important;gap:0}
+#simulator[data-mode] #incomePanel label{font-size:10.5px;font-weight:800;letter-spacing:.35px;text-transform:uppercase;color:#5b7080;margin:0 0 4px}
+#simulator[data-mode] #income{height:44px!important;min-height:44px;border:1.5px solid #d4e0df;border-radius:10px;background:#f6f9f9;font-size:15px;font-weight:650}
+#simulator[data-mode] #income:focus{background:#fff;border-color:var(--teal);box-shadow:0 0 0 4px rgba(8,125,119,.12)}
+#simulator[data-mode] #incomePanel .simActions{display:flex!important;gap:6px;margin:0}
+#simulator[data-mode] #runSim{height:44px;min-height:44px;padding:0 16px;border-radius:10px;font-size:13.5px;white-space:nowrap}
+#simulator[data-mode] #clearSim{height:44px;min-height:44px;padding:0 12px;border:1.5px solid #d4e0df;border-radius:10px;background:#fff;color:#5b7080;font-size:13px;font-weight:700;white-space:nowrap}
+#simulator[data-mode] #simResult{grid-column:1/-1;margin:2px 0 0;padding:9px 12px;border-radius:9px;background:#f0f7f5;font-size:13px;line-height:1.5}
+
+/* Aba LOCALIZAÇÃO: o painel de filtros encaixa logo abaixo das abas, no mesmo cartão */
+/* Cartão único: abas + conteúdo da aba (em cima) e características compartilhadas (embaixo) */
+#simulator[data-mode]{margin-bottom:0;border-bottom:0;border-radius:14px 14px 0 0;padding-bottom:4px;box-shadow:none}
+#simulator[data-mode]+#busca.filters{margin-top:0;border-top:0;border-radius:0 0 14px 14px;padding-top:10px;margin-bottom:22px}
+#simulator[data-mode]+#busca.filters,#simulator[data-mode]+#busca.filters{box-shadow:0 14px 22px -14px rgba(19,50,71,.14)}
+/* Aba RENDA: mostra só os filtros GLOBAIS (Situação + Características);
+   busca, Região, Cidade, Bairro e o botão "Região e cidade" são exclusivos da aba Localização */
+#simulator[data-mode=income]+#busca .filtergrid>div:nth-child(1),
+#simulator[data-mode=income]+#busca .filtergrid>div:nth-child(2),
+#simulator[data-mode=income]+#busca .filtergrid>div:nth-child(3),
+#simulator[data-mode=income]+#busca .filtergrid>div:nth-child(4),
+#simulator[data-mode=income]+#busca .mcmvLoc{display:none!important}
+#simulator[data-mode=income]+#busca .filtergrid{grid-template-columns:minmax(180px,280px) auto minmax(0,1fr)!important;margin-top:10px;padding-top:10px;border-top:1px dashed #d6e2e0}
+#simulator[data-mode=income]+#busca .filtergrid>div:nth-child(5){grid-column:1!important;grid-row:1!important}
+#simulator[data-mode=income]+#busca .filtergrid>.mcmvToggles{grid-column:2;grid-row:1}
+@media(max-width:700px){
+  #simulator[data-mode=income]+#busca .filtergrid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  #simulator[data-mode=income]+#busca .filtergrid>.mcmvToggles{grid-column:2}
+}
+#simulator[data-mode] .tabShort{display:none}
+#simulator[data-mode]+#busca.filters{padding-left:14px;padding-right:14px}
+
+@media(max-width:600px){
+  #simulator[data-mode]{padding:8px 10px 10px;margin-bottom:8px;border-radius:12px}
+  #simulator[data-mode]{border-radius:12px 12px 0 0;padding-bottom:2px}
+  #simulator[data-mode]+#busca.filters{border-radius:0 0 12px 12px;padding-top:8px;margin-bottom:8px}
+    #simulator[data-mode]>.simActions button{min-height:38px;font-size:12.5px;padding:6px 8px;gap:6px}
+  #simulator[data-mode]>.simActions button::before{width:15px;height:15px}
+  #simulator[data-mode=income] #incomePanel{grid-template-columns:minmax(0,1fr);margin-top:10px;gap:6px}
+  #simulator[data-mode] #income{font-size:16px}
+  #simulator[data-mode] #incomePanel .simActions{display:grid!important;grid-template-columns:minmax(0,1fr) auto}
+  #simulator[data-mode] #runSim,#simulator[data-mode] #clearSim{height:42px;min-height:42px;font-size:12.5px}
+  #simulator[data-mode] #clearSim{padding:0 10px}
+  #simulator[data-mode] #simResult{font-size:12.5px;padding:8px 10px}
+}
+@media(max-width:600px){#simulator[data-mode] .tabLong{display:none}#simulator[data-mode] .tabShort{display:inline}#simulator[data-mode]+#busca.filters{padding-left:10px;padding-right:10px}}
+@media(max-width:360px){#simulator[data-mode]>.simActions button::before{display:none}}
+</style>
+</head>
+<body>
+<header class="siteHeader"><a href="#portal" class="brand" aria-label="Página inicial do portal">MCMV<span>RS</span><small>PORTAL Minha Casa Minha Vida - RS</small></a><nav aria-label="Navegação principal"><a href="#busca">Buscar imóveis</a><a href="#empreendimentos">Empreendimentos</a><a href="#sobre">Sobre o portal</a></nav></header>
+<main class="wrap" id="portal">
+<section class="hero" aria-labelledby="heroTitle"><div class="heroContent"><div class="eyebrow">PORTAL Minha Casa Minha Vida - RS</div><h1 id="heroTitle">Minha Casa<br>Minha Vida <span>RS</span></h1><p>Encontre empreendimentos no Rio Grande do Sul. Pesquise por cidade, bairro e conheça as opções para conquistar seu imóvel.</p><a class="heroLink" href="#busca">Ver empreendimentos <span aria-hidden="true">→</span></a></div></section>
+<section class="simBox" id="simulator"><div class="eyebrow">ENCONTRE SEU IMÓVEL</div><h2>Como deseja pesquisar?</h2><p>Simule seu poder de compra pela renda <strong>ou</strong> busque diretamente por cidade, bairro e endereço.</p><div aria-label="Tipo de busca" class="simActions" role="group"><button id="modeIncome" type="button">Simular pela renda</button><button class="secondary" id="modePlace" type="button">Buscar por localização</button></div><div id="incomePanel"><div class="simGrid" style="grid-template-columns:minmax(220px,440px)"><div><label for="income">Renda familiar mensal (R$)</label><input id="income" inputmode="decimal" min="1" step="0.01" type="number" value="5000"/></div></div><div class="simActions"><button id="runSim" type="button">Simular e filtrar imóveis</button><button class="secondary" id="clearSim" type="button">Limpar simulação</button></div><div aria-live="polite" class="simResult" id="simResult">Informe sua renda para estimar o valor financiável e filtrar a vitrine.</div></div><div hidden="" id="placePanel"><p>Use os filtros logo abaixo para pesquisar por endereço, cidade, bairro e situação do empreendimento.</p><button id="focusPlace" type="button">Pesquisar por localização ↓</button></div></section><section aria-labelledby="filterTitle" class="filters" id="busca">
+<div class="eyebrow" id="filterTitle" style="margin-bottom:12px">Encontre o imóvel ideal</div>
+<div class="filtergrid">
+<div><label for="regionFilter">Região</label><select id="regionFilter"><option value="">Todas as regiões</option></select></div><div><label for="search">Buscar empreendimento, bairro ou cidade</label><div class="searchwrap"><svg fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg><input id="search" placeholder="Ex.: Canoas, Centro, sacada..." type="search"/></div></div>
+<div><label for="cityFilter">Cidade</label><select id="cityFilter"><option value="">Todas as cidades</option></select></div>
+<div><label for="neighborhoodFilter">Bairro</label><select id="neighborhoodFilter"><option value="">Todos os bairros</option></select></div>
+<div><label for="stateFilter">Situação</label><select id="stateFilter"><option value="">Todas as situações</option><option>Na planta</option><option>Em construção</option><option>Pronto para morar</option></select></div>
+</div>
+<div class="attributeArea" id="attributeArea" data-core-version="4.2.0" aria-labelledby="attributeHeading"><div class="attributeHeader"><strong id="attributeHeading">Características e benefícios</strong><span id="attributeHelp">Carregando características...</span></div><div id="attributeFilters" class="attributeOptions" role="group" aria-label="Filtrar por características"><p class="attributeEmpty">Carregando características...</p></div></div>
+<p class="attributeDiagnostic" id="attributeDiagnostic" aria-live="polite">Catálogo: aguardando leitura do JSON.</p>
+<div class="filtertail"><p aria-live="polite" id="resultsCount" role="status">Carregando empreendimentos...</p><button class="secondary" id="resetFilters" type="button">Limpar filtros</button></div>
+</section>
+<div class="listingheader" id="empreendimentos"><div><div class="eyebrow">NOSSA VITRINE</div><h2>Imóveis disponíveis</h2></div></div>
+<div aria-live="off" class="tiles" id="tiles"></div>
+<section class="about" id="sobre"><div><span class="eyebrow">Sobre o portal</span><h2>Informação para escolher com mais segurança.</h2></div><p>Uma vitrine para você encontrar o seu imóvel ideal, apartamentos, casas, empreendimentos que atendem o que você precisa. Informações relevantes para ajudar a concretizar o sonho da casa em diferentes regiões.</p></section><footer class="siteFooter"><div><strong>MCMV<span>RS</span></strong><p class="footnote">PORTAL Minha Casa Minha Vida - RS, sem vínculo institucional com a Caixa ou órgãos governamentais. Resultados financeiros são apenas estimativas.</p></div><a href="#portal">Voltar ao início ↑</a></footer>
+</main>
+<script src="config.js"></script><script src="app.js?v=9.0.0"></script>
+<script id="busca-abas-js">
+/* MCMV-RS · Busca em abas + filtros retráteis. Independente do app.js:
+   só lê os campos, marca estados visuais e dispara eventos nativos. */
+/* 1) Dois grupos recolhíveis com contador: "Região e cidade" (só Localização) e "Características" (global) */
+(function(){
+  var panel=document.getElementById('busca'); if(!panel) return;
+  var grid=panel.querySelector('.filtergrid'); if(!grid) return;
+  var sim=document.getElementById('simulator');
+  var LOC=['regionFilter','cityFilter','neighborhoodFilter'];
+  var chev='<svg class="mcmvChevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
+  function mk(cls,icon,long,short,title){
+    var b=document.createElement('button'); b.type='button'; b.className='mcmvFilterToggle '+cls;
+    b.setAttribute('aria-controls','busca'); b.title=title;
+    b.innerHTML=icon+'<span class="mcmvLabel"><span class="lblLong">'+long+'</span><span class="lblShort">'+short+'</span></span><span class="mcmvBadge" hidden></span>'+chev;
+    return b;
+  }
+  var btnLoc=mk('mcmvLoc','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>','Região e cidade','Local','Região, cidade e bairro');
+  var btnAttr=mk('mcmvAttr','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>','Características','Extras','Características e benefícios');
+  var wrap=document.createElement('div'); wrap.className='mcmvToggles';
+  wrap.appendChild(btnLoc); wrap.appendChild(btnAttr); grid.appendChild(wrap);
+  var active=document.createElement('div'); active.className='mcmvActive'; active.setAttribute('aria-label','Filtros ativos'); active.hidden=true;
+  grid.insertAdjacentElement('afterend',active);
+  var groups={loc:{btn:btnLoc,cls:'loc-collapsed',key:'mcmvLocOpen'},attr:{btn:btnAttr,cls:'attr-collapsed',key:'mcmvAttrOpen'}};
+
+  function isOpen(g){return !panel.classList.contains(groups[g].cls)}
+  function setOpen(g,open,save){
+    var G=groups[g]; panel.classList.toggle(G.cls,!open);
+    G.btn.setAttribute('aria-expanded',open?'true':'false');
+    if(save){try{localStorage.setItem(G.key,open?'1':'0')}catch(e){}}
+    refresh();
+  }
+  function fire(el){['input','change'].forEach(function(t){el.dispatchEvent(new Event(t,{bubbles:true}))})}
+  function pill(text,onRemove){
+    var b=document.createElement('button'); b.type='button';
+    b.innerHTML='<span></span><i aria-hidden="true">×</i>'; b.firstChild.textContent=text;
+    b.setAttribute('aria-label','Remover filtro: '+text);
+    b.addEventListener('click',function(){onRemove();setTimeout(refresh,0)});
+    active.appendChild(b);
+  }
+  function refresh(){
+    var place=!sim||sim.getAttribute('data-mode')!=='income';
+    var nLoc=0,nAttr=0; active.innerHTML='';
+    LOC.forEach(function(id){
+      var s=document.getElementById(id); if(!s||!s.value) return; nLoc++;
+      if(place&&!isOpen('loc')){var o=s.options[s.selectedIndex];pill(o?o.text:s.value,function(){s.value='';fire(s)})}
+    });
+    panel.querySelectorAll('#attributeFilters input[type=checkbox]:checked').forEach(function(cb){
+      nAttr++;
+      if(!isOpen('attr')){
+        var l=cb.closest('label'),t=l?l.textContent:'',c=l&&l.querySelector('.attributeCount');
+        if(c) t=t.replace(c.textContent,'');
+        pill(t.trim()||'Característica',function(){cb.click()});
+      }
+    });
+    [[btnLoc,nLoc],[btnAttr,nAttr]].forEach(function(x){var bd=x[0].querySelector('.mcmvBadge');bd.textContent=x[1];bd.hidden=!x[1]});
+    active.hidden=!active.children.length;
+  }
+  btnLoc.addEventListener('click',function(){setOpen('loc',!isOpen('loc'),true)});
+  btnAttr.addEventListener('click',function(){setOpen('attr',!isOpen('attr'),true)});
+  var fp=document.getElementById('focusPlace'); if(fp) fp.addEventListener('click',function(){setOpen('loc',true,false)});
+  panel.addEventListener('change',function(){setTimeout(refresh,0)});
+  panel.addEventListener('input',function(){setTimeout(refresh,0)});
+  document.addEventListener('click',function(){setTimeout(refresh,50)});
+  if(window.MutationObserver){var t;new MutationObserver(function(muts){
+    if(muts.every(function(m){return active.contains(m.target)||m.target===active||wrap.contains(m.target)}))return;
+    clearTimeout(t);t=setTimeout(refresh,60)}).observe(panel,{childList:true,subtree:true})}
+  if(sim&&window.MutationObserver) new MutationObserver(refresh).observe(sim,{attributes:true,attributeFilter:['data-mode']});
+  ['loc','attr'].forEach(function(g){var v=null;try{v=localStorage.getItem(groups[g].key)}catch(e){}setOpen(g,v==='1',false)});
+  requestAnimationFrame(function(){panel.classList.add('is-ready')});
+})();
+/* 2) Abas Renda | Localização (os botões #modeIncome/#modePlace seguem chamando o app.js) */
+(function(){
+  var sim=document.getElementById('simulator'),bi=document.getElementById('modeIncome'),bp=document.getElementById('modePlace');
+  if(!sim||!bi||!bp) return;
+  var KEY='mcmvSearchTab', group=bi.parentNode;
+  group.setAttribute('role','tablist'); group.setAttribute('aria-label','Como deseja pesquisar');
+  bi.setAttribute('role','tab'); bp.setAttribute('role','tab');
+  bi.innerHTML='<span class="tabLong">Simular pela renda</span><span class="tabShort">Pela renda</span>'; bp.innerHTML='<span class="tabLong">Buscar por localização</span><span class="tabShort">Localização</span>';
+  function setMode(m,save){
+    sim.setAttribute('data-mode',m);
+    bi.setAttribute('aria-selected',m==='income'?'true':'false');
+    bp.setAttribute('aria-selected',m==='place'?'true':'false');
+    if(save){try{localStorage.setItem(KEY,m)}catch(e){}}
+  }
+  bi.addEventListener('click',function(){setMode('income',true)});
+  bp.addEventListener('click',function(){setMode('place',true)});
+  /* Links que levam à busca (#busca) abrem a aba Localização */
+  document.addEventListener('click',function(e){
+    var a=e.target.closest&&e.target.closest('a[href="#busca"]');
+    if(a&&sim.getAttribute('data-mode')!=='place') bp.click();
+  },true);
+  if(location.hash==='#busca') bp.click();
+  var saved=null; try{saved=localStorage.getItem(KEY)}catch(e){}
+  setMode('income',false);
+  if(saved==='place') bp.click();
+})();
+</script>
+</body>
+</html>
