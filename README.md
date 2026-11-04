@@ -4,7 +4,9 @@ Planilha Google → API do Apps Script → **um único workflow** no GitHub Acti
 O visitante só lê arquivos estáticos; a API nunca é chamada pelo navegador.
 
 ## Instalar
-1. Suba o conteúdo desta pasta na **raiz** do repositório (branch `main`).
+1. Suba o conteúdo desta pasta na **raiz** do repositório (branch `main`). Atenção: `.github` começa com ponto e fica **oculta** no Finder e no Explorer;
+   se ela não subir, o GitHub não mostra nenhum workflow. Confira no GitHub que existe `.github/workflows/core-imobiliario.yml` na raiz
+   (não dentro de outra pasta). Se faltar, use **Add file → Create new file**, digite `.github/workflows/core-imobiliario.yml` no nome e cole o conteúdo.
 2. Em **Settings → Secrets and variables → Actions** mantenha `VITRINE_API_URL` com a URL `/exec` do Apps Script
    (aba *Variables*; a aba *Secrets* também é aceita).
 3. Em **Settings → Pages**, a origem deve ser **GitHub Actions**.
