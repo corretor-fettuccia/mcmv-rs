@@ -1,0 +1,119 @@
+name: Core Imobiliario - Sincronizar e Publicar
+
+# V10 - UM workflow, UM job de construcao. Sequencia (qualquer falha impede a publicacao):
+#   API do Apps Script -> catalogo.json -> feeds Google + Marketplace -> paginas -> sitemap -> llms.txt
+#   -> validar -> montar _site -> validar _site -> publicar no Pages -> conferir as URLs publicas.
+# Variavel do repositorio: VITRINE_API_URL (URL /exec do Apps Script), em Settings > Secrets and variables > Actions.
+'on':
+  workflow_dispatch: {}
+  push:
+    branches: [main]
+    paths-ignore: ['**.md', '.gitignore']
+  schedule:
+    - cron: '17 7 * * *'
+
+concurrency:
+  group: core-imobiliario-pages
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  construir:
+    name: Construir e validar o site
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      pages: write   # configure-pages consulta a configuracao do Pages (modelo oficial do GitHub)
+    steps:
+      - name: Ler arquivos do Git
+        uses: actions/checkout@v5
+      - name: Preparar Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Avisar sobre arquivos de versoes anteriores
+        run: python -u scripts/audit_repo.py
+      - name: Testes automatizados (sem rede)
+        run: |
+          cd scripts
+          python -u -m unittest test_core
+          node test_vitrine_hover.js
+          node test_vitrine_catalogo.js  # sem catalogo.json ainda: so as fixtures da propria vitrine
+      - name: 1/8 Ler a API do Apps Script e gerar catalogo.json
+        env:
+          VITRINE_API_URL: ${{ vars.VITRINE_API_URL || secrets.VITRINE_API_URL }}
+        run: |
+          echo '=== V10 [1/8] API -> catalogo.json ==='
+          test -n "$VITRINE_API_URL" || { echo '::error::Defina VITRINE_API_URL em Settings > Secrets and variables > Actions > Variables'; exit 1; }
+          python -u scripts/sync_catalog.py
+      - name: 2/8 Gerar feeds Google Merchant e Meta Marketplace
+        run: |
+          echo '=== V10 [2/8] feeds Merchant + Marketplace ==='
+          python -u scripts/build_feeds.py
+      - name: 3/8 Gerar paginas individuais com imagens
+        run: |
+          echo '=== V10 [3/8] paginas individuais ==='
+          python -u scripts/build_pages.py
+      - name: 4/8 Gerar sitemap.xml e robots.txt
+        run: |
+          echo '=== V10 [4/8] sitemap ==='
+          python -u scripts/build_sitemap.py
+      - name: 5/8 Gerar llms.txt
+        run: |
+          echo '=== V10 [5/8] llms.txt ==='
+          python -u scripts/build_llms.py
+      - name: 6/8 Validar catalogo, feeds, sitemap e paginas
+        run: |
+          echo '=== V10 [6/8] validacao ==='
+          python -u scripts/validate.py --check all
+          node --check app.js
+          node scripts/test_vitrine_catalogo.js  # agora tambem contra o catalogo.json real desta execucao
+      - name: 7/8 Montar o site (_site)
+        run: |
+          echo '=== V10 [7/8] montagem do artefato ==='
+          python -u scripts/stage_site.py
+      - name: 8/8 Validar o site montado
+        run: |
+          echo '=== V10 [8/8] validacao do artefato ==='
+          python -u scripts/validate.py --root _site --check site
+      - name: Preparar GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Enviar o site para publicacao
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+
+  publicar:
+    name: Publicar no GitHub Pages
+    needs: construir
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - name: Publicar
+        id: deploy
+        uses: actions/deploy-pages@v4
+
+  verificar:
+    name: Conferir as URLs publicas
+    needs: publicar
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Ler arquivos do Git
+        uses: actions/checkout@v5
+      - name: Preparar Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Conferir merchant, marketplace e sitemap no dominio
+        run: python -u scripts/verify_public.py
