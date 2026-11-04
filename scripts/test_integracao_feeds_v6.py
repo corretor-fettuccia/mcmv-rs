@@ -66,7 +66,7 @@ class IntegracaoFeedsV6(unittest.TestCase):
         meta_xml, _ = compile_xml(catalog)
         self.assertEqual(len(ET.fromstring(meta_xml).findall('listing')), 1)
 
-    def test_core_nao_exige_workflow_marketplace(self):
+    def test_core_v8_exige_workflow_marketplace(self):
         scripts = Path(__file__).resolve().parent
         src = scripts.parent / '.github' / 'workflows'
         with tempfile.TemporaryDirectory() as tmp:
@@ -76,13 +76,17 @@ class IntegracaoFeedsV6(unittest.TestCase):
             (root / 'scripts').mkdir()
             for workflow in ('core-imobiliario.yml', 'sinc-data.yml',
                              'make-feed-merchantcenter.yml', 'make-sitemap.yml',
-                             'make-subpage.yml'):
+                             'make-subpage.yml', 'gerar-marketplace.yml'):
                 shutil.copy2(src / workflow, dst / workflow)
             for audit in ('auditar_workflows_v425.py', 'check_workflows_v423.py'):
                 shutil.copy2(scripts / audit, root / 'scripts' / audit)
                 result = subprocess.run([sys.executable, str(root / 'scripts' / audit)],
                                         capture_output=True, text=True)
                 self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            (dst / 'gerar-marketplace.yml').unlink()
+            for audit in ('auditar_workflows_v425.py', 'check_workflows_v423.py'):
+                result = subprocess.run([sys.executable, str(root / 'scripts' / audit)], capture_output=True, text=True)
+                self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
 
     def test_publicador_copia_ambos_xmls_sem_alterar_fontes(self):
         with tempfile.TemporaryDirectory() as tmp:

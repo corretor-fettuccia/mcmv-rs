@@ -1,25 +1,22 @@
 #!/usr/bin/env python3
-"""Confere os cinco workflows essenciais sem acoplar o Core ao Marketplace."""
+"""Confere os seis workflows que integram o Core V8."""
 from pathlib import Path
 import sys
 
 wf = Path(__file__).resolve().parents[1] / '.github' / 'workflows'
 essential = ('sinc-data.yml', 'make-feed-merchantcenter.yml', 'make-sitemap.yml',
              'make-subpage.yml', 'core-imobiliario.yml')
-optional = 'gerar-marketplace.yml'
+optional = 'gerar-marketplace.yml'  # agora faz parte da sequencia V8
 errors = []
 for name in (*essential, optional):
     path = wf / name
-    if name == optional and not path.is_file():
-        print('AVISO: Marketplace não instalado; o Core pode publicar normalmente.')
-        continue
     if not path.is_file():
         errors.append(f'AUSENTE: {path}')
         continue
     content = path.read_text(encoding='utf-8')
     if 'workflow_dispatch:' not in content:
         errors.append(f'SEM RUN WORKFLOW: {name}')
-    if name in essential[:4] and 'workflow_call:' not in content:
+    if (name in essential[:4] or name == optional) and 'workflow_call:' not in content:
         errors.append(f'SEM WORKFLOW_CALL: {name}')
     print(f'OK {path.relative_to(wf.parent.parent)}')
 extras = sorted(({path.name for path in wf.glob('*.yml')} |
@@ -31,4 +28,4 @@ if errors:
     for error in errors:
         print('::error::' + error)
     sys.exit(1)
-print('OK: Core independente; Marketplace verificado quando instalado.')
+print('OK: seis workflows do Core V8, inclusive Marketplace.')

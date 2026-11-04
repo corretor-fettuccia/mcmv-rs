@@ -23,13 +23,14 @@ def run():
              'name':'Imóvel teste','description':'Descrição completa, sacada e jacuzzi.','highlight':'Resumo',
              'gallery':['https://imovel.example.com/foto.webp'], 'attributes':['Sacada','Jacuzzi'],
              'state':'Em construção','minimum':250000,'maximum':280000,'brand':'Construtora Exemplo',
-             'condition':'new','merchantId':'imovel_1','googleEnabled':True,'googleAvailability':'in_stock'}
+             'condition':'new','merchantId':'imovel_1','googleEnabled':True,'googleAvailability':'in_stock', 'address':'Rua Modelo, 100', 'city':'Canoas', 'uf':'RS'}
         fixture=root/'api-fixture.json'
         fixture.write_text(json.dumps({'ok':True,'schemaVersion':4,'sourceContract':'core-imobiliario-v4',
                                        'snapshotComplete':True,'totalRows':1,'publishedRows':1,'items':[row]}),encoding='utf-8')
         env={**os.environ,'PORTAL_FIXTURE':str(fixture)}
         for engine in ('sinc-data','make-feed-merchantcenter','make-sitemap','make-subpage'):
             subprocess.run([sys.executable,str(root/'scripts'/f'{engine}.py')],env=env,cwd=root,check=True,stdout=subprocess.DEVNULL)
+        subprocess.run([sys.executable,str(root/'scripts'/'gerar_marketplace.py'), '--source', str(root/'catalogo.json')],env=env,cwd=root,check=True,stdout=subprocess.DEVNULL)
         subprocess.run([sys.executable,str(root/'scripts'/'stage_pages_v421.py')],env=env,cwd=root,check=True,stdout=subprocess.DEVNULL)
         subprocess.run([sys.executable,str(root/'scripts'/'validate_pages_v421.py')],env=env,cwd=root,check=True,stdout=subprocess.DEVNULL)
         page=root/'_site'/'imoveis'/'imovel_1'/'index.html'

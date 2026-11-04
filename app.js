@@ -47,19 +47,93 @@
       const dia=new Date().toISOString().slice(0,10);
       return (!x.campaignStart||x.campaignStart<=dia)&&(!x.campaignEnd||x.campaignEnd>=dia);
     }
+    // V9: galeria da vitrine inspirada no Imoplace, com as URLs do catálogo V4.
+    // Não altera a imagem principal nem o formato do catalogo.json.
+    function cardGalleryUrls(item){
+      const source=Array.isArray(item.gallery)?item.gallery:[];
+      const pictures=[item.image,...source];
+      const output=[];
+      const seen=new Set();
+      for(const candidate of pictures){
+        const url=typeof candidate==='string' ? candidate.trim()
+          : candidate && typeof candidate==='object' ? String(candidate.url||candidate.src||candidate.imagem||'').trim() : '';
+        if(!validUrl(url)||seen.has(url))continue;
+        seen.add(url);output.push(url);
+        if(output.length>=5)break; // Mesmo limite de cinco fotos da vitrine do Imoplace.
+      }
+      return output;
+    }
     function cardHtml(x,i){
       const campanha=campanhaValida(x);
       const pin=campanha && x.campaign==='SELO'?'<span class="campaignPin">'+esc(x.campaignText||'CONDIÇÃO ESPECIAL')+'</span>':'';
       const banner=campanha && x.campaign==='BANNER'?'<div class="campaignBanner">'+esc(x.campaignText||'Condição especial')+'</div>':'';
-      const img=validUrl(x.image)?'<img src="'+esc(x.image)+'" loading="lazy" alt="Empreendimento '+esc(x.name)+'" onerror="this.style.display=\'none\'">':artSvg(i);
+      const photos=cardGalleryUrls(x);
+      const slides=photos.length?photos.map((url,index)=>
+        '<img class="cardSlide'+(index===0?' is-active':'')+'" src="'+esc(url)+'" loading="lazy" decoding="async" width="640" height="400" alt="'+esc(x.name)+' — foto '+(index+1)+' de '+photos.length+'"'+(index>0?' aria-hidden="true"':'')+'>').join(''):artSvg(i);
+      const markers=photos.length>1
+        ?'<span class="cardGalleryCount" aria-hidden="true">1 / '+photos.length+'</span><span class="cardGalleryDots" aria-hidden="true">'+photos.map((_,index)=>'<i'+(index===0?' class="is-active"':'')+'></i>').join('')+'</span>'
+        :'';
       // Na vitrine, o único destino é a página de detalhes do próprio portal.
       // A URL comercial da landing page pertence exclusivamente à página individual.
       const href=validUrl(x.pageUrl)?x.pageUrl:'';
       const action=href
         ?'<a class="cardbtn" href="'+esc(href)+'" aria-label="Ver detalhes de '+esc(x.name)+'">Ver detalhes →</a>'
         :'<span class="cardbtn is-disabled" aria-disabled="true">Detalhes indisponíveis</span>';
-      return '<article class="card"><div class="cardmedia">'+img+'<span class="badge">'+esc(x.state)+'</span>'+pin+'</div><div class="cardbody"><h3>'+esc(x.name)+'</h3><div class="location">'+locationSvg+'<span>'+esc([x.neighborhood,x.city].filter(Boolean).join(' · '))+'</span></div>'+banner+'<p class="detail">'+esc(x.highlight)+'</p><div class="divider"><div class="price"><small>FAIXA DE VALORES</small>'+esc(labelPrice(x.minimum,x.maximum))+'</div>'+action+'</div></div></article>';
+      return '<article class="card"><div class="cardmedia'+(pin?' hasCampaign':'')+'" data-gallery-count="'+photos.length+'">'+slides+'<span class="badge">'+esc(x.state)+'</span>'+pin+markers+'</div><div class="cardbody"><h3>'+esc(x.name)+'</h3><div class="location">'+locationSvg+'<span>'+esc([x.neighborhood,x.city].filter(Boolean).join(' · '))+'</span></div>'+banner+'<p class="detail">'+esc(x.highlight)+'</p><div class="divider"><div class="price"><small>FAIXA DE VALORES</small>'+esc(labelPrice(x.minimum,x.maximum))+'</div>'+action+'</div></div></article>';
     }
+
+    // Eventos delegados: funcionam mesmo após filtros e re-renderização dos cards.
+    const galleryReducedMotion=typeof matchMedia==='function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let galleryActiveCard=null;
+    let galleryTicker=null;
+    let gallerySlideIndex=0;
+    function galleryShow(card,index){
+      const media=card.querySelector('.cardmedia');if(!media)return;
+      const slides=Array.from(media.querySelectorAll('.cardSlide'));
+      if(slides.length<2)return;
+      gallerySlideIndex=index%slides.length;
+      slides.forEach((slide,j)=>{
+        slide.classList.toggle('is-active',j===gallerySlideIndex);
+        if(j===gallerySlideIndex)slide.removeAttribute('aria-hidden');
+        else slide.setAttribute('aria-hidden','true');
+      });
+      media.querySelectorAll('.cardGalleryDots i').forEach((dot,j)=>dot.classList.toggle('is-active',j===gallerySlideIndex));
+      const count=media.querySelector('.cardGalleryCount');
+      if(count)count.textContent=(gallerySlideIndex+1)+' / '+slides.length;
+    }
+    function galleryStop(){
+      if(galleryTicker!==null){clearInterval(galleryTicker);galleryTicker=null;}
+      if(galleryActiveCard)galleryShow(galleryActiveCard,0);
+      galleryActiveCard=null;gallerySlideIndex=0;
+    }
+    function galleryStart(card){
+      if(galleryReducedMotion || !card || galleryActiveCard===card)return;
+      const media=card.querySelector('.cardmedia');
+      if(!media||Number(media.dataset.galleryCount)<2)return;
+      galleryStop();galleryActiveCard=card;
+      const slides=media.querySelectorAll('.cardSlide');
+      slides.forEach(img=>{img.loading='eager';});
+      // No Imoplace, a primeira troca acontece ao entrar no card.
+      galleryShow(card,1);
+      galleryTicker=setInterval(()=>galleryShow(card,gallerySlideIndex+1),1500);
+    }
+    function galleryCardFromTarget(target){
+      return target && typeof target.closest==='function' ? target.closest('.tiles .card') : null;
+    }
+    $('tiles').addEventListener('pointerover',event=>{
+      if(event.pointerType && event.pointerType!=='mouse' && event.pointerType!=='pen')return;
+      const card=galleryCardFromTarget(event.target);
+      if(card && (!event.relatedTarget||!card.contains(event.relatedTarget)))galleryStart(card);
+    });
+    $('tiles').addEventListener('pointerout',event=>{
+      const card=galleryCardFromTarget(event.target);
+      if(card===galleryActiveCard && (!event.relatedTarget||!card.contains(event.relatedTarget)))galleryStop();
+    });
+    $('tiles').addEventListener('focusin',event=>galleryStart(galleryCardFromTarget(event.target)));
+    $('tiles').addEventListener('focusout',event=>{
+      const card=galleryCardFromTarget(event.target);
+      if(card===galleryActiveCard && (!event.relatedTarget||!card.contains(event.relatedTarget)))galleryStop();
+    });
     function updateSelect(el,values,blank){
       const old=el.value;
       const sorted=[...new Set(values.map(clean).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
@@ -150,6 +224,7 @@
       });
       if(financial) filtered=filtered.filter(x=>compatibility(x).matched);
       $('resultsCount').textContent=filtered.length+' '+(filtered.length===1?'empreendimento encontrado':'empreendimentos encontrados');
+      galleryStop();
       $('tiles').innerHTML=filtered.length?filtered.map(cardHtml).join(''):'<div class="empty">Nenhum empreendimento encontrado. Ajuste os filtros de localização ou sua renda.</div>';
     }
     function renderMode(mode){

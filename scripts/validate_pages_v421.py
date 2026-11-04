@@ -10,7 +10,7 @@ def run():
     dest = ROOT / '_site'
     catalog = json.loads((dest / 'catalogo.json').read_text(encoding='utf-8'))
     conf = settings()
-    needed = ['index.html', 'app.js', 'catalogo.json', 'sitemap.xml', 'robots.txt', 'merchant-produtos.xml', '.nojekyll']
+    needed = ['index.html', 'app.js', 'catalogo.json', 'sitemap.xml', 'robots.txt', 'merchant-produtos.xml', 'marketplace-produtos.xml', '.nojekyll']
     for filename in needed:
         if not (dest / filename).is_file():
             raise RuntimeError('Arquivo ausente do artefato Pages: ' + filename)

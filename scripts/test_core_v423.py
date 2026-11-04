@@ -28,7 +28,7 @@ def run():
                     'attributes':attrs,'state':'Em construção',
                     'minimum':250000,'maximum':300000,'brand':'Construtora Exemplo',
                     'condition':'new','merchantId':id, 'googleEnabled':google,
-                    'googleAvailability':'in_stock'}
+                    'googleAvailability':'in_stock', 'address':'Rua Modelo, 100', 'city':'Canoas', 'uf':'RS'}
         payload = {'ok':True,'schemaVersion':4, 'sourceContract':'core-imobiliario-v4',
                    'snapshotComplete':True,'totalRows':2,'publishedRows':2,
                    'items':[row('imovel-linq',['Sacada','Churrasqueira','Água quente','2 Dormitórios','Elevador duplo'],True),
@@ -39,6 +39,7 @@ def run():
             env = dict(os.environ, PORTAL_FIXTURE=str(fixture))
             for step in ['sinc-data','make-feed-merchantcenter','make-sitemap','make-subpage']:
                 subprocess.run([sys.executable,str(root/'scripts'/f'{step}.py')], cwd=root,env=env,check=True,capture_output=True,text=True)
+            subprocess.run([sys.executable, str(root/'scripts'/'gerar_marketplace.py'), '--source', str(root/'catalogo.json')], cwd=root,env=env,check=True,capture_output=True,text=True)
             for step in ['validate_portal_v420','stage_pages_v421','validate_pages_v421']:
                 subprocess.run([sys.executable,str(root/'scripts'/f'{step}.py')], cwd=root,env=env,check=True,capture_output=True,text=True)
         pipeline()

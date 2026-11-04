@@ -318,6 +318,20 @@ html{scroll-padding-top:92px}body{font-family:system-ui,-apple-system,"Segoe UI"
 .cardbtn.is-disabled{opacity:.55;cursor:not-allowed}
 @media(max-width:600px){.attributeHeader{display:block}.attributeHeader span{display:block;margin-top:4px}.attributeOptions{gap:7px}.attributeChoice{font-size:12px!important;padding:8px 9px}}
 </style>
+<style id="vitrine-hover-gallery-v9">
+/* MCMV-RS V9 · Carrossel de fotos nos cards, com a mesma interação do Imoplace. */
+.cardmedia .cardSlide{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;opacity:0;z-index:0;transition:opacity .4s ease;pointer-events:none}
+.cardmedia .cardSlide.is-active{opacity:1;z-index:1}
+.cardmedia .fallbackArtwork{z-index:0}
+.cardmedia .badge,.cardmedia .campaignPin{z-index:4}
+.cardmedia .cardGalleryCount{position:absolute;right:9px;bottom:9px;z-index:3;border-radius:5px;padding:2px 6px;background:rgba(13,35,44,.67);color:#fff;font-size:10px;font-weight:750;line-height:1.45;pointer-events:none;opacity:0;transition:opacity .2s}
+.cardmedia .cardGalleryDots{position:absolute;left:10px;bottom:12px;z-index:3;display:flex;gap:4px;align-items:center;pointer-events:none;opacity:0;transition:opacity .2s}
+.cardmedia .cardGalleryDots i{display:block;width:6px;height:6px;border-radius:9px;background:rgba(255,255,255,.68);box-shadow:0 1px 2px #0004;transition:width .25s ease,background-color .25s ease}
+.cardmedia .cardGalleryDots i.is-active{width:16px;background:#fff}
+.card:hover .cardGalleryCount,.card:focus-within .cardGalleryCount,.card:hover .cardGalleryDots,.card:focus-within .cardGalleryDots{opacity:1}
+@media(max-width:600px){.cardmedia .cardGalleryDots{display:none}.cardmedia .cardGalleryCount{right:5px;bottom:5px;font-size:9px;padding:1px 4px}.cardmedia.hasCampaign .cardGalleryCount{display:none}}
+@media(prefers-reduced-motion:reduce){.cardmedia .cardSlide,.cardmedia .cardGalleryDots i,.cardmedia .cardGalleryDots,.cardmedia .cardGalleryCount{transition:none}}
+</style>
 </head>
 <body>
 <header class="siteHeader"><a href="#portal" class="brand" aria-label="Página inicial do portal">MCMV<span>RS</span><small>PORTAL Minha Casa Minha Vida - RS</small></a><nav aria-label="Navegação principal"><a href="#busca">Buscar imóveis</a><a href="#empreendimentos">Empreendimentos</a><a href="#sobre">Sobre o portal</a></nav></header>
@@ -339,5 +353,5 @@ html{scroll-padding-top:92px}body{font-family:system-ui,-apple-system,"Segoe UI"
 <div aria-live="off" class="tiles" id="tiles"></div>
 <section class="about" id="sobre"><div><span class="eyebrow">Sobre o portal</span><h2>Informação para escolher com mais segurança.</h2></div><p>Uma vitrine para você encontrar o seu imóvel ideal, apartamentos, casas, empreendimentos que atendem o que você precisa. Informações relevantes para ajudar a concretizar o sonho da casa em diferentes regiões.</p></section><footer class="siteFooter"><div><strong>MCMV<span>RS</span></strong><p class="footnote">PORTAL Minha Casa Minha Vida - RS, sem vínculo institucional com a Caixa ou órgãos governamentais. Resultados financeiros são apenas estimativas.</p></div><a href="#portal">Voltar ao início ↑</a></footer>
 </main>
-<script src="config.js"></script><script src="app.js?v=4.2.0"></script></body>
+<script src="config.js"></script><script src="app.js?v=9.0.0"></script></body>
 </html>

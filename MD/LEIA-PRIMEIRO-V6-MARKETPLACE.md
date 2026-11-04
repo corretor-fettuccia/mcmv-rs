@@ -1,3 +1,5 @@
+> **HISTÓRICO V6.** Para instalar a versão atual, leia `LEIA-PRIMEIRO-V8-MARKETPLACE.md`.
+
 # MCMV-RS V6 corrigida — Feed Marketplace + Feed Merchant
 
 ## O que mudou
