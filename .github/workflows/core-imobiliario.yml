@@ -1,7 +1,8 @@
 name: Core Imobiliario - Sincronizar e Publicar
 
 # V10 - UM workflow, UM job de construcao. Sequencia (qualquer falha impede a publicacao):
-#   API do Apps Script -> catalogo.json -> feeds Google + Marketplace -> paginas -> sitemap -> llms.txt
+#   API do Apps Script -> catalogo.json -> feeds Google + Marketplace -> paginas + imagens baixadas
+#   -> sitemap (das paginas construidas) -> llms.txt (sitemap + catalogo)
 #   -> validar -> montar _site -> validar _site -> publicar no Pages -> conferir as URLs publicas.
 # Variavel do repositorio: VITRINE_API_URL (URL /exec do Apps Script), em Settings > Secrets and variables > Actions.
 'on':
@@ -54,15 +55,15 @@ jobs:
         run: |
           echo '=== V10 [2/8] feeds Merchant + Marketplace ==='
           python -u scripts/build_feeds.py
-      - name: 3/8 Gerar paginas individuais com imagens
+      - name: 3/8 Gerar paginas individuais e baixar as imagens para imoveis/
         run: |
-          echo '=== V10 [3/8] paginas individuais ==='
+          echo '=== V10 [3/8] paginas individuais + imagens ==='
           python -u scripts/build_pages.py
-      - name: 4/8 Gerar sitemap.xml e robots.txt
+      - name: 4/8 Gerar sitemap.xml a partir das paginas construidas
         run: |
           echo '=== V10 [4/8] sitemap ==='
           python -u scripts/build_sitemap.py
-      - name: 5/8 Gerar llms.txt
+      - name: 5/8 Gerar llms.txt (sitemap + catalogo)
         run: |
           echo '=== V10 [5/8] llms.txt ==='
           python -u scripts/build_llms.py
