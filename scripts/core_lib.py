@@ -186,6 +186,10 @@ def convert_record(raw, site):
         'condition':('used' if text(raw.get('state'),60).casefold()=='usado' else (text(raw.get('condition'),30) or ('new' if text(raw.get('state'),60) in ['Em construção','Pronto para morar'] else ''))),
         'googleEnabled':raw.get('googleEnabled') is True or str(raw.get('googleEnabled','')).upper()=='SIM',
         'googleAvailability':text(raw.get('googleAvailability'),30),
+        # Preserva desativação Meta quando a API a fornecer; ausência mantém elegibilidade normal.
+        'marketplaceEnabled':not (raw.get('marketplaceEnabled') is False or
+                                  str(raw.get('marketplaceEnabled', '')).strip().upper() in
+                                  ('NAO', 'NÃO', 'FALSE', '0', 'OFF')), 
         'merchantId':text(raw.get('merchantId'),80) or uid,
         'seoTitle':text(raw.get('seoTitle'),140),
         'region':text(raw.get('region'),100),'city':text(raw.get('city'),100),
@@ -286,6 +290,7 @@ def catalog_json(items, payload, conf):
         'atributos_disponiveis': available,
         'feeds': {
             'google_merchant_xml': conf['site_url'] + 'merchant-produtos.xml',
+            'meta_marketplace_xml': conf['site_url'] + 'marketplace-produtos.xml',
             'google_ads_csv': conf['site_url'] + 'google-ads-imoveis.csv'
         }
     }

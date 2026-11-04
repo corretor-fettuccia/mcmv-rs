@@ -56,8 +56,9 @@ class IntegracaoFeedsV6(unittest.TestCase):
         catalog['items'][0]['marketplaceEnabled'] = False
         google_xml = build_merchant(catalog)
         self.assertEqual(len(ET.fromstring(google_xml).findall('./channel/item')), 1)
-        with self.assertRaises(ValueError):
-            compile_xml(catalog)
+        xml, stats = compile_xml(catalog)
+        self.assertEqual(stats['incluidos'], 0)
+        self.assertEqual(len(ET.fromstring(xml).findall('listing')), 0)
 
     def test_google_desativado_nao_afeta_meta(self):
         catalog = fixture()
@@ -97,6 +98,9 @@ class IntegracaoFeedsV6(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             (root/'index.html').write_text('<h1>Portal</h1>', encoding='utf-8')
+            (root/'sitemap.xml').write_text('<urlset/>', encoding='utf-8')
+            (root/'robots.txt').write_text('User-agent: *\n', encoding='utf-8')
+            (root/'llms.txt').write_text('# Portal', encoding='utf-8')
             (root/'merchant-produtos.xml').write_bytes(build_merchant(fixture()))
             (root/'catalogo.json').write_text(json.dumps(fixture()), encoding='utf-8')
             (root/'marketplace-produtos.xml').write_bytes(compile_xml(fixture())[0])

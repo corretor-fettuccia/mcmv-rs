@@ -37,7 +37,9 @@ class Tests(unittest.TestCase):
 
     def test_sem_preco_nao_vai_ao_feed(self):
         data=sample();data['items'][0]['minimum']=None
-        with self.assertRaises(ValueError): compile_xml(data)
+        xml,report=compile_xml(data)
+        self.assertEqual(report['incluidos'], 0)
+        self.assertEqual(len(ET.fromstring(xml).findall('listing')),0)
 
     def test_imagens_invalidas_nao_entram(self):
         data=sample()['items'][0]
@@ -46,7 +48,9 @@ class Tests(unittest.TestCase):
 
     def test_preco_nao_inventado(self):
         data=sample();data['items'][0]['minimum']='informe-se'
-        with self.assertRaises(ValueError): compile_xml(data)
+        xml,report=compile_xml(data)
+        self.assertEqual(report['incluidos'], 0)
+        self.assertEqual(len(ET.fromstring(xml).findall('listing')),0)
 
     def test_flag_marketplace_independente_google(self):
         data=sample()
@@ -58,7 +62,9 @@ class Tests(unittest.TestCase):
     def test_flag_marketplace_desativada(self):
         data=sample()
         data['items'][0]['marketplaceEnabled']=False
-        with self.assertRaises(ValueError): compile_xml(data)
+        xml,report=compile_xml(data)
+        self.assertEqual(report['incluidos'], 0)
+        self.assertEqual(len(ET.fromstring(xml).findall('listing')),0)
 
     def test_url_personalizada_para_outros_portais(self):
         data=sample()

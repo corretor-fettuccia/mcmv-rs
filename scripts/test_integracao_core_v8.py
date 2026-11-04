@@ -23,7 +23,10 @@ class TestCoreV8(unittest.TestCase):
         self.assertLess(core.index('  merchant:'), core.index('  sitemap:'))
         self.assertLess(core.index('  sitemap:'), core.index('  subpage:'))
         self.assertIn('needs: merchant', core)
-        self.assertIn('Gerar marketplace-produtos.xml (Meta) - V9.3', core)
+        self.assertIn('2/4 Gerar feeds Merchant + Marketplace', core)
+        merchant = (BASE/'.github/workflows/make-feed-merchantcenter.yml').read_text(encoding='utf-8')
+        self.assertIn('marketplace-produtos.xml', merchant)
+        self.assertIn('merchant-produtos.xml', merchant)
         self.assertNotIn('uses: ./.github/workflows/gerar-marketplace.yml', core)
         self.assertIn('needs: subpage', core)
         self.assertIn('scripts/stage_pages_v421.py', core)
@@ -42,6 +45,9 @@ class TestCoreV8(unittest.TestCase):
             # Meta ja gerado na etapa preparar, staging verifica e recria quando necessario.
             (root / 'marketplace-produtos.xml').write_bytes(meta)
             (root / 'index.html').write_text('<h1>teste</h1>', encoding='utf8')
+            (root / 'sitemap.xml').write_text('<urlset/>', encoding='utf8')
+            (root / 'robots.txt').write_text('User-agent: *', encoding='utf8')
+            (root / 'llms.txt').write_text('Portal', encoding='utf8')
             with patch.object(stage_pages_v421, 'ROOT', root), patch.object(stage_pages_v421, 'DEST', root / '_site'), patch.object(validate_marketplace_v8, 'ROOT', root):
                 stage_pages_v421.run()
             self.assertEqual((root / '_site/merchant-produtos.xml').read_bytes(), google)

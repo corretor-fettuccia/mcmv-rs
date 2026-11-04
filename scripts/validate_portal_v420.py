@@ -3,6 +3,7 @@
 import json, sys
 import xml.etree.ElementTree as ET
 from core_lib import ROOT, settings, attribute_key, attribute_label
+from core_lib import valid_url
 
 def run():
     conf = settings()
@@ -51,6 +52,21 @@ def run():
     expected_urls = [conf['site_url']] + [item['pageUrl'] for item in items]
     if set(urls) != set(expected_urls) or len(urls) != len(expected_urls):
         raise ValueError('Sitemap incompleto ou contém URLs antigas')
+    im = '{http://www.google.com/schemas/sitemap-image/1.1}'
+    for node in sitemap.findall('.//'+ns+'url'):
+        uri = node.findtext(ns+'loc')
+        item = next((x for x in items if x['pageUrl'] == uri), None)
+        actual = [x.text for x in node.findall(im+'image/'+im+'loc')]
+        if item is None:
+            if actual:
+                raise ValueError('Imagens associadas a URL não imobiliária do sitemap')
+            continue
+        expected = list(dict.fromkeys(value for value in
+            [item.get('image'), *(item.get('gallery') or [])]
+            if valid_url(value)))[:1000]
+        if actual != expected:
+            raise ValueError('Sitemap de imagens incompleto/divergente para: '+item['id'])
+
     rss = ET.parse(ROOT / 'merchant-produtos.xml')
     channel = rss.find('channel')
     if channel is None: raise ValueError('Feed sem channel')

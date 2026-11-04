@@ -7,7 +7,41 @@ from urllib.parse import urlsplit
 from core_lib import ROOT, settings, put
 
 SM = 'http://www.sitemaps.org/schemas/sitemap/0.9'
+IM = 'http://www.google.com/schemas/sitemap-image/1.1'
 ET.register_namespace('', SM)
+ET.register_namespace('image', IM)
+
+
+def images(item):
+    # A primeira imagem e a galeria vêm do mesmo catálogo público.
+    # HTTPS e URLs sem espaços; não inventar URLs nem repetir imagens.
+    from core_lib import valid_url
+    selected = []
+    for raw in [item.get('image'), *(item.get('gallery') or [])]:
+        if valid_url(raw) and raw not in selected:
+            selected.append(raw)
+    return selected[:1000]
+
+
+def build_sitemap(catalog, conf):
+    site = conf['site_url']
+    items = catalog['items']
+    root = ET.Element(f'{{{SM}}}urlset')
+    main = ET.SubElement(root, f'{{{SM}}}url')
+    ET.SubElement(main, f'{{{SM}}}loc').text = site
+    for entry in items:
+        expected = site + 'imoveis/' + entry['id'] + '/'
+        if entry.get('pageUrl') != expected:
+            raise RuntimeError(f'URL da subpágina não confere para {entry["id"]}: {entry.get("pageUrl")}')
+        node = ET.SubElement(root, f'{{{SM}}}url')
+        ET.SubElement(node, f'{{{SM}}}loc').text = expected
+        for photo in images(entry):
+            im_node = ET.SubElement(node, f'{{{IM}}}image')
+            ET.SubElement(im_node, f'{{{IM}}}loc').text = photo
+    ET.indent(root, space='  ')
+    result = b'<?xml version="1.0" encoding="UTF-8"?>\n' + ET.tostring(root, encoding='utf-8') + b'\n'
+    ET.fromstring(result)
+    return result
 
 
 def run():
@@ -16,19 +50,7 @@ def run():
     if catalog.get('schemaVersion') != 4 or not isinstance(catalog.get('items'), list):
         raise RuntimeError('catalogo.json V4 não encontrado: execute sinc-data antes.')
     site = conf['site_url']
-    urls = [site]
-    for entry in catalog['items']:
-        uri = entry.get('pageUrl')
-        expected = site + 'imoveis/' + entry['id'] + '/'
-        if uri != expected:
-            raise RuntimeError(f'URL da subpágina não confere para {entry["id"]}: {uri}')
-        urls.append(uri)
-    root = ET.Element(f'{{{SM}}}urlset')
-    for uri in dict.fromkeys(urls):
-        ET.SubElement(ET.SubElement(root, f'{{{SM}}}url'), f'{{{SM}}}loc').text = uri
-    ET.indent(root, space='  ')
-    content = b'<?xml version="1.0" encoding="utf-8"?>\n' + ET.tostring(root, encoding='utf-8') + b'\n'
-    ET.fromstring(content)
+    content = build_sitemap(catalog, conf)
     put(ROOT / 'sitemap.xml', content)
     robots = f'User-agent: *\nAllow: /\n\nSitemap: {site}sitemap.xml\n'
     put(ROOT / 'robots.txt', robots)
@@ -43,7 +65,8 @@ def run():
                       f'- Resumo: {(entry.get("description") or "")[:500]}', ''])
     lines.extend(['## Aviso', '', 'Condições sujeitas a confirmação com o anunciante.', ''])
     put(ROOT / 'llms.txt', '\n'.join(lines) + '\n')
-    print(f'[make-sitemap] {len(urls)} URLs canônicas; sitemap.xml e robots.txt atualizados.', flush=True)
+    total_imagens = sum(len(images(item)) for item in catalog['items'])
+    print(f'[make-sitemap V9.4] {len(catalog["items"])+1} URLs canônicas; {total_imagens} fotos; sitemap.xml e robots.txt atualizados.', flush=True)
 
 if __name__ == '__main__':
     try: run()

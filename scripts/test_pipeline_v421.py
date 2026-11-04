@@ -30,7 +30,6 @@ def run():
         env={**os.environ,'PORTAL_FIXTURE':str(fixture)}
         for engine in ('sinc-data','make-feed-merchantcenter','make-sitemap','make-subpage'):
             subprocess.run([sys.executable,str(root/'scripts'/f'{engine}.py')],env=env,cwd=root,check=True,stdout=subprocess.DEVNULL)
-        subprocess.run([sys.executable,str(root/'scripts'/'gerar_marketplace.py'), '--source', str(root/'catalogo.json')],env=env,cwd=root,check=True,stdout=subprocess.DEVNULL)
         subprocess.run([sys.executable,str(root/'scripts'/'stage_pages_v421.py')],env=env,cwd=root,check=True,stdout=subprocess.DEVNULL)
         subprocess.run([sys.executable,str(root/'scripts'/'validate_pages_v421.py')],env=env,cwd=root,check=True,stdout=subprocess.DEVNULL)
         page=root/'_site'/'imoveis'/'imovel_1'/'index.html'
