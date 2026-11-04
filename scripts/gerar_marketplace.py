@@ -46,8 +46,8 @@ def check_contract(doc):
     if doc.get('snapshotComplete') is not True:
         raise ValueError('Snapshot incompleto: arquivo existente preservado')
     items = doc.get('items')
-    if not isinstance(items,list):
-        raise ValueError('Lista items inválida: arquivo existente preservado')
+    if not isinstance(items,list) or not items:
+        raise ValueError('Lista items vazia: arquivo existente preservado')
     total = doc.get('total_empreendimentos')
     if type(total) is not int or total != len(items):
         raise ValueError(f'Contagem inconsistente: total_empreendimentos={total}, items={len(items)}')
@@ -158,7 +158,7 @@ def compile_xml(doc, feed_url=None):
         else:
             excluded.append({'id':str(item.get('id','?')),'motivo':reason})
     if included == 0:
-        logging.warning('Nenhum imóvel Meta elegível. Será publicado XML vazio para refletir o catálogo atual.')
+        raise ValueError('Nenhum item válido: arquivo existente preservado')
     ET.indent(root,space='  ')
     content=ET.tostring(root,encoding='utf-8',xml_declaration=True)
     ET.fromstring(content)

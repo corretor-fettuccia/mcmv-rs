@@ -56,9 +56,8 @@ class IntegracaoFeedsV6(unittest.TestCase):
         catalog['items'][0]['marketplaceEnabled'] = False
         google_xml = build_merchant(catalog)
         self.assertEqual(len(ET.fromstring(google_xml).findall('./channel/item')), 1)
-        xml, stats = compile_xml(catalog)
-        self.assertEqual(stats['incluidos'], 0)
-        self.assertEqual(len(ET.fromstring(xml).findall('listing')), 0)
+        with self.assertRaises(ValueError):
+            compile_xml(catalog)
 
     def test_google_desativado_nao_afeta_meta(self):
         catalog = fixture()
@@ -78,8 +77,10 @@ class IntegracaoFeedsV6(unittest.TestCase):
             (root / 'scripts').mkdir()
             for workflow in ('core-imobiliario.yml', 'sinc-data.yml',
                              'make-feed-merchantcenter.yml', 'make-sitemap.yml',
-                             'make-subpage.yml', 'gerar-marketplace.yml'):
+                             'make-subpage.yml'):
                 shutil.copy2(src / workflow, dst / workflow)
+            # V9.4 não distribui gerar-marketplace.yml; um legado V9.3 continua tolerado.
+            (dst / 'gerar-marketplace.yml').write_text("on: {workflow_call: {}, workflow_dispatch: {}}\n", encoding='utf-8')
             for audit in ('auditar_workflows_v425.py', 'check_workflows_v423.py'):
                 shutil.copy2(scripts / audit, root / 'scripts' / audit)
                 result = subprocess.run([sys.executable, str(root / 'scripts' / audit)],
@@ -98,11 +99,9 @@ class IntegracaoFeedsV6(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             (root/'index.html').write_text('<h1>Portal</h1>', encoding='utf-8')
-            (root/'sitemap.xml').write_text('<urlset/>', encoding='utf-8')
-            (root/'robots.txt').write_text('User-agent: *\n', encoding='utf-8')
-            (root/'llms.txt').write_text('# Portal', encoding='utf-8')
             (root/'merchant-produtos.xml').write_bytes(build_merchant(fixture()))
             (root/'catalogo.json').write_text(json.dumps(fixture()), encoding='utf-8')
+            (root/'sitemap.xml').write_text('<urlset/>', encoding='utf-8')
             (root/'marketplace-produtos.xml').write_bytes(compile_xml(fixture())[0])
             output = root/'_site'
             import validate_marketplace_v8

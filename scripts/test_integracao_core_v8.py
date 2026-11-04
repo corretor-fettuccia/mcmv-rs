@@ -23,15 +23,14 @@ class TestCoreV8(unittest.TestCase):
         self.assertLess(core.index('  merchant:'), core.index('  sitemap:'))
         self.assertLess(core.index('  sitemap:'), core.index('  subpage:'))
         self.assertIn('needs: merchant', core)
-        self.assertIn('2/4 Gerar feeds Merchant + Marketplace', core)
-        merchant = (BASE/'.github/workflows/make-feed-merchantcenter.yml').read_text(encoding='utf-8')
-        self.assertIn('marketplace-produtos.xml', merchant)
-        self.assertIn('merchant-produtos.xml', merchant)
-        self.assertNotIn('uses: ./.github/workflows/gerar-marketplace.yml', core)
+        self.assertNotIn('gerar-marketplace.yml', core)  # V9.4: sem workflow Meta separado
+        self.assertNotIn('Gerar marketplace-produtos.xml', core)  # sem geração na montagem
         self.assertIn('needs: subpage', core)
         self.assertIn('scripts/stage_pages_v421.py', core)
         self.assertIn('name: core-v4-catalogo', core)
+        self.assertIn('name: core-v4-feeds', core)
         self.assertNotIn('name: core-v4-marketplace', core)
+        self.assertNotIn('name: core-v4-merchant', core)
         self.assertNotIn('git push', core)
 
     def test_both_feeds_use_same_catalog_and_enter_pages(self):
@@ -42,12 +41,10 @@ class TestCoreV8(unittest.TestCase):
             root = Path(d)
             (root / 'catalogo.json').write_text(json.dumps(source), encoding='utf8')
             (root / 'merchant-produtos.xml').write_bytes(google)
-            # Meta ja gerado na etapa preparar, staging verifica e recria quando necessario.
+            # Meta gerado pelo motor 02; o staging apenas confere e copia.
             (root / 'marketplace-produtos.xml').write_bytes(meta)
             (root / 'index.html').write_text('<h1>teste</h1>', encoding='utf8')
             (root / 'sitemap.xml').write_text('<urlset/>', encoding='utf8')
-            (root / 'robots.txt').write_text('User-agent: *', encoding='utf8')
-            (root / 'llms.txt').write_text('Portal', encoding='utf8')
             with patch.object(stage_pages_v421, 'ROOT', root), patch.object(stage_pages_v421, 'DEST', root / '_site'), patch.object(validate_marketplace_v8, 'ROOT', root):
                 stage_pages_v421.run()
             self.assertEqual((root / '_site/merchant-produtos.xml').read_bytes(), google)
@@ -64,6 +61,7 @@ class TestCoreV8(unittest.TestCase):
             (root / 'catalogo.json').write_text(json.dumps(source), encoding='utf8')
             (root / 'merchant-produtos.xml').write_bytes(google)
             (root / 'marketplace-produtos.xml').write_text('antigo', encoding='utf8')
+            (root / 'sitemap.xml').write_text('<urlset/>', encoding='utf8')
             with patch.object(stage_pages_v421, 'ROOT', root), patch.object(stage_pages_v421, 'DEST', root / '_site'), patch.object(validate_marketplace_v8, 'ROOT', root):
                 with self.assertRaises(RuntimeError):
                     stage_pages_v421.run()

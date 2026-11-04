@@ -1,22 +1,22 @@
-# Auditoria Ponytail V9.4 — fluxos de publicação
+# Relatório Ponytail — MCMV-RS V9.4
 
-**Escopo:** entrada de catálogo (API Google Apps Script V4), normalização, saída dos dois XMLs, sitemap de imagens, artefatos de workflow e publicação GitHub Pages. Volume presumido: dezenas a centenas de imóveis, execução agendada de um único Core.
+## O que este repositório faz
+O Core sincroniza o catálogo com a API do Apps Script, gera feeds Google e Meta, sitemap e páginas, e publica no GitHub Pages. Carga: uma execução diária mais manuais, catálogo pequeno.
 
-## Falhas corrigidas
+## Corrigido
+1. **O feed Meta nascia por três caminhos** (workflow avulso, passo na montagem, fallback no staging). Agora um só gerador, no motor 02; a montagem só confere.
+2. **`marketplaceEnabled` nunca chegava ao catálogo** (`core_lib.py`): uma linha o repassa (ausente = publicado).
+3. **A validação do Marketplace comparava o gerador com ele mesmo.** `validate_xml_v94.py` valida o contrato por fora do gerador.
+4. **Ninguém verificava o domínio.** Job `verificar_publicacao` (`verify_public_v94.py`).
+5. **Dois testes defendiam o comportamento antigo**: removidos; 25 testes novos em `test_feeds_unificados_v94.py`. Mutação: 9 defeitos plantados (sitemap sem imagens, namespace removido, home removida, marketplace não gravado, falha engolida, indicador ignorado, staging sem exigir feeds, artefato sem marketplace, Core baixando artefato antigo), todos pegos.
 
-1. **Dois lugares gerando o Marketplace:** o feed não era produzido no job do Merchant, mas apenas depois, no job Pages. Isso permitia falhas por falta de artefato e obscurecia o ponto de erro. Agora os dois XMLs saem de `scripts/make-feed-merchantcenter.py` e entram em `core-v4-merchant`.
-2. **Mapa sem imagens:** `scripts/make-sitemap.py` gerava apenas `<loc>` das páginas. Agora adiciona fotos em `image:image/image:loc` por página, com URLs HTTPS válidas e sem duplicatas, e mantém `robots.txt` coerente com o domínio.
-3. **Desativação Meta descartada:** `core_lib.convert_record` não preservava `marketplaceEnabled`, tornando inócua uma eventual desativação na API. Agora o campo é preservado e é independente de `googleEnabled`.
-4. **Nenhum item Meta gerava falha:** se não houvesse elegíveis, o Marketplace falhava após o Merchant ter sido gerado. Agora o feed vazio representa fielmente o catálogo, sem inventar ofertas.
-5. **Resumo do Core incorreto:** exibia versão antiga e marcava feed Meta vazio como arquivo ausente. Atualizado.
+## Não corrigido (de propósito)
+- Testes legados V4.1.x já quebrados na V9.3.
+- Catálogo sem imóvel elegível bloqueia o deploy. `shortcut: Meta vazio não é publicado, mudar se for preciso retirar tudo de uma vez.`
+- `postal_code`, latitude e longitude: o catálogo não tem, não inventados.
 
-## Auditoria de regressão
+## Veredito
+Pronto para instalar. Nenhuma dependência nova. `merchant_from_catalog.py`, `gerar_marketplace.py`, `app.js`, `index.html` e o Apps Script estão byte a byte iguais à V9.3.
 
-- O gerador de conteúdo XML Google em `merchant_from_catalog.py` não foi modificado.
-- O carrossel V9 `app.js` e `index.html` não foram modificados.
-- Scripts `sinc-data.py`, `make-subpage.py` e seus workflows foram preservados.
-- Os testes agora verificam o mesmo artefato com os dois XMLs, a montagem sem regeneração silenciosa, a rejeição de XML Meta desatualizado, a presença de URLs e imagens no sitemap, e a exclusão de URLs de imóveis inativos.
-
-## Limites desta auditoria
-
-Não houve execução na conta GitHub nem importação autenticada no Commerce Manager. O XML foi validado sintaticamente em testes locais. Não se afirmou homologação de publicação automática na Meta.
+## Não verificado
+Execução real no GitHub Actions e no domínio; aceitação pela Meta e Google; download das imagens remotas.

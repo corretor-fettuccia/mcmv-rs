@@ -30,8 +30,10 @@ def run():
         env={**os.environ,'PORTAL_FIXTURE':str(fixture)}
         for engine in ('sinc-data','make-feed-merchantcenter','make-sitemap','make-subpage'):
             subprocess.run([sys.executable,str(root/'scripts'/f'{engine}.py')],env=env,cwd=root,check=True,stdout=subprocess.DEVNULL)
+        assert (root/'marketplace-produtos.xml').is_file()  # V9.4: gerado pelo motor 02
         subprocess.run([sys.executable,str(root/'scripts'/'stage_pages_v421.py')],env=env,cwd=root,check=True,stdout=subprocess.DEVNULL)
         subprocess.run([sys.executable,str(root/'scripts'/'validate_pages_v421.py')],env=env,cwd=root,check=True,stdout=subprocess.DEVNULL)
+        subprocess.run([sys.executable,str(root/'scripts'/'validate_xml_v94.py'),'--root',str(root/'_site')],env=env,cwd=root,check=True,stdout=subprocess.DEVNULL)
         page=root/'_site'/'imoveis'/'imovel_1'/'index.html'
         assert 'Jacuzzi' in page.read_text(encoding='utf-8')
         assert 'Compartilhar' in page.read_text(encoding='utf-8')

@@ -18,6 +18,9 @@ def run():
     items = catalog.get('items')
     if catalog.get('schemaVersion') != 4 or not isinstance(items, list):
         raise RuntimeError('Catálogo não está no formato V4')
+    expected_meta = any(make_listing(item)[0] is not None for item in items)
+    if not expected_meta:
+        raise RuntimeError('Nenhum imóvel Meta elegível: falha explícita, não publicar feed vazio')
     from xml.etree import ElementTree as ET
     meta_xml = ET.parse(dest / 'marketplace-produtos.xml').getroot()
     if meta_xml.tag != 'listings' or len(meta_xml.findall('listing')) != sum(make_listing(item)[0] is not None for item in items):

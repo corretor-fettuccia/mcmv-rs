@@ -20,4 +20,4 @@ for name in sorted(found):
     if 'workflow_dispatch:' not in (folder / name).read_text(encoding='utf-8'):
         print('::error::Falta workflow_dispatch em', name)
         sys.exit(1)
-print('OK: cinco workflows essenciais; sexto Meta é opcional.')
+print('OK: cinco workflows essenciais; gerar-marketplace.yml (legado V9.3) é tolerado, mas não é usado.')

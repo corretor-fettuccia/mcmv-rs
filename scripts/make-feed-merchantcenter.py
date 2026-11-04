@@ -1,9 +1,14 @@
 #!/usr/bin/env python3
-"""Motor 2: um catálogo -> Merchant XML, Marketplace XML e CSV de anúncios."""
+"""Motor 2 (V9.4, unificado): catalogo.json -> merchant-produtos.xml + marketplace-produtos.xml.
+
+Uma unica rotina, um unico catalogo, sem chamada a API. Os dois XMLs sao montados
+em memoria antes de qualquer gravacao: se o Marketplace falhar, nada e gravado.
+"""
 import json
 import csv
 import io
 import sys
+import xml.etree.ElementTree as ET
 from core_lib import ROOT, put
 from merchant_from_catalog import build
 from gerar_marketplace import compile_xml
@@ -13,11 +18,12 @@ def run():
     catalog = json.loads((ROOT / 'catalogo.json').read_text(encoding='utf-8'))
     if catalog.get('schemaVersion') != 4 or catalog.get('sourceContract') != 'core-imobiliario-v4':
         raise RuntimeError('Catálogo V4 obrigatório; execute sinc-data primeiro.')
-    # O Merchant continua utilizando exatamente o mesmo gerador de antes.
-    content = build(catalog)  # RSS válido mesmo com zero imóveis elegíveis
-    meta_content, meta_report = compile_xml(catalog)
-    updated = put(ROOT / 'merchant-produtos.xml', content)
-    meta_updated = put(ROOT / 'marketplace-produtos.xml', meta_content)
+    merchant = build(catalog)  # RSS válido mesmo com zero imóveis elegíveis
+    try:
+        meta, report = compile_xml(catalog)
+    except ValueError as exc:  # sem Marketplace não há publicação (V9.4)
+        # shortcut: Meta vazio não é publicado (todos os imóveis desligados bloqueiam o deploy); mudar se for preciso retirar tudo de uma vez.
+        raise RuntimeError(f'Marketplace (Meta) não gerado: {exc}') from exc
     # Compatibilidade com o feed de anúncios em CSV, também derivado do catálogo.
     out = io.StringIO()
     fields = ['Listing ID','Listing name','Final URL','Image URL','City name','Description',
@@ -33,13 +39,17 @@ def run():
             'Property type':item.get('propertyType') or 'Other','Listing type':'For sale',
             'Contextual keywords':'; '.join(item.get('attributes',[])[:5]),
             'Address':', '.join(v for v in [item.get('address'),item.get('city'),item.get('uf')] if v)})
+    # Gravação somente depois de os dois feeds estarem prontos.
+    state = lambda changed: 'atualizado' if changed else 'inalterado'
+    merchant_items = len(ET.fromstring(merchant).findall('./channel/item'))
+    print(f'[feeds V9.4] 1/2 GERADO merchant-produtos.xml: {merchant_items} itens, {len(merchant)} bytes, '
+          f'{state(put(ROOT / "merchant-produtos.xml", merchant))}', flush=True)
     put(ROOT / 'google-ads-imoveis.csv', out.getvalue().encode('utf-8-sig'))
-    print('[FEEDS V9.4] Merchant:', 'atualizado' if updated else 'inalterado',
-          '; Marketplace:', 'atualizado' if meta_updated else 'inalterado',
-          f'; Meta incluídos={meta_report["incluidos"]}, excluídos={len(meta_report["excluidos"])}', flush=True)
-    if meta_report['excluidos']:
-        for skipped in meta_report['excluidos']:
-            print(f'[FEEDS V9.4] Meta ignorado {skipped["id"]}: {skipped["motivo"]}', flush=True)
+    print(f'[feeds V9.4] 2/2 GERADO marketplace-produtos.xml: {report["incluidos"]} anúncios de '
+          f'{report["recebidos"]}, {len(meta)} bytes, {state(put(ROOT / "marketplace-produtos.xml", meta))}', flush=True)
+    for skipped in report['excluidos']:
+        print(f'[feeds V9.4] Marketplace excluiu {skipped["id"]}: {skipped["motivo"]}', flush=True)
+    put(ROOT / 'marketplace-relatorio.json', json.dumps(report, ensure_ascii=False, indent=2) + '\n')
 
 if __name__ == '__main__':
     try: run()

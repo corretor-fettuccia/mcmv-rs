@@ -41,6 +41,7 @@ def run():
                 subprocess.run([sys.executable,str(root/'scripts'/f'{step}.py')], cwd=root,env=env,check=True,capture_output=True,text=True)
             for step in ['validate_portal_v420','stage_pages_v421','validate_pages_v421']:
                 subprocess.run([sys.executable,str(root/'scripts'/f'{step}.py')], cwd=root,env=env,check=True,capture_output=True,text=True)
+            subprocess.run([sys.executable,str(root/'scripts'/'validate_xml_v94.py'),'--root',str(root/'_site')], cwd=root,env=env,check=True,capture_output=True,text=True)
         pipeline()
         catalog=json.loads((root/'_site'/'catalogo.json').read_text())
         assert len(catalog['items'])==2
@@ -49,6 +50,7 @@ def run():
         ns={'x':'http://www.sitemaps.org/schemas/sitemap/0.9'}
         assert len(ET.parse(root/'_site'/'sitemap.xml').findall('.//x:loc',ns))==3
         assert len(ET.parse(root/'_site'/'merchant-produtos.xml').findall('./channel/item'))==1
+        assert len(ET.parse(root/'_site'/'marketplace-produtos.xml').findall('listing'))==2  # independe do flag Google
         page = root/'_site'/'imoveis'/'imovel-linq'/'index.html'
         assert all(x in page.read_text() for x in ['Acessar página do imóvel','Compartilhar','Água quente'])
         old_url=catalog['items'][0]['pageUrl']
