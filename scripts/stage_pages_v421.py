@@ -6,6 +6,7 @@ Nao inclui codigo-fonte, workflows, dados de teste ou .git no site publicado.
 import shutil
 from pathlib import Path
 from core_lib import ROOT
+from feeds_v94 import run as generate_feeds
 from validate_marketplace_v8 import run as validate_marketplace
 
 DEST = ROOT / '_site'
@@ -23,13 +24,24 @@ PUBLIC_XML = ('merchant-produtos.xml', 'marketplace-produtos.xml', 'sitemap.xml'
 
 
 def run():
-    # V9.4: os feeds nascem no motor unificado (02 make-feed-merchantcenter). Aqui so se confere:
-    # ausente ou invalido => falha ANTES de tocar em _site.
+    # V9.4: os feeds nascem no motor 02. Se o Core instalado e antigo (workflow so repassa o Merchant),
+    # o Marketplace nao chega aqui: regera com a MESMA rotina, a partir do catalogo desta execucao.
+    # Se nao for possivel gerar, falha ANTES de tocar em _site.
+    meta = ROOT / 'marketplace-produtos.xml'
+    if not meta.is_file() or not meta.stat().st_size:
+        print('[Pages V9.4] AVISO: marketplace-produtos.xml nao veio do job 2 (workflow antigo?). '
+              'Gerando com o motor unificado a partir do catalogo desta execucao.', flush=True)
+        if not (ROOT / 'catalogo.json').is_file():
+            raise RuntimeError('[Pages V9.4] Arquivo obrigatorio ausente: catalogo.json')
+        try:
+            generate_feeds(ROOT)
+        except Exception as exc:
+            raise RuntimeError(f'[Pages V9.4] Nao foi possivel gerar Marketplace: {exc}') from exc
+        print('[Pages V9.4] FEED META GERADO na montagem (fallback). Instale o core-imobiliario.yml V9.4.', flush=True)
     for filename in ('catalogo.json', *PUBLIC_XML):
         path = ROOT / filename
         if not path.is_file() or not path.stat().st_size:
-            raise RuntimeError(f'[Pages V9.4] Arquivo obrigatorio ausente: {filename}. '
-                               'Confira se .github/workflows (V9.4) foi instalado: o motor 02 gera Merchant e Marketplace.')
+            raise RuntimeError(f'[Pages V9.4] Arquivo obrigatorio ausente: {filename}.')
     try:
         validate_marketplace()
     except Exception as exc:

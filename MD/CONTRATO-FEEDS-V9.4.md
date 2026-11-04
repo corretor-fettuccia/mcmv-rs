@@ -76,7 +76,7 @@ Elegibilidade: `marketplaceEnabled` diferente de `false` e `id`, `name`, `city`,
 | Job 02 | `validate_xml_v94.py --check feeds` | XML malformado; raiz/namespace errados; campo obrigatório ausente; preço fora do formato ou zero; id repetido; URL não https (inclui `data:`); imagem repetida; `availability` fora do contrato; Marketplace vazio; divergência do catálogo |
 | Job 03 | `--check sitemap` | declaração/namespace ausentes; URL ou imagem repetida; principal fora do topo; fora do catálogo; `robots.txt` sem `Sitemap:`; `llms.txt` ausente |
 | Job 5-6, validação | `validate_portal_v420.py` + `--check all` | tudo acima + páginas inexistentes/`noindex` |
-| Job 5-6, montagem | `stage_pages_v421.py`, `validate_pages_v421.py`, `--root _site` | feed ou sitemap ausente (falha **antes** de tocar em `_site`); contrato revalidado no artefato |
+| Job 5-6, montagem | `stage_pages_v421.py`, `validate_pages_v421.py`, `--root _site` | Marketplace ausente é regerado por `feeds_v94.run` (fallback para Core antigo); se não der, ou se faltar merchant/sitemap/catálogo, falha **antes** de tocar em `_site`; contrato revalidado no artefato |
 | Pós-deploy | `verify_public_v94.py` | URL pública ausente ou fora do contrato (8 tentativas, 30 s) |
 
 ## 6. Testes automatizados (`scripts/`, sem rede; rodam no job `preparar` antes de publicar)

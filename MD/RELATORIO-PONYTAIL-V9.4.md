@@ -10,6 +10,9 @@ O Core sincroniza o catálogo com a API do Apps Script, gera feeds Google e Meta
 4. **Ninguém verificava o domínio.** Job `verificar_publicacao` (`verify_public_v94.py`).
 5. **Dois testes defendiam o comportamento antigo**: removidos; 25 testes novos em `test_feeds_unificados_v94.py`. Mutação: 9 defeitos plantados (sitemap sem imagens, namespace removido, home removida, marketplace não gravado, falha engolida, indicador ignorado, staging sem exigir feeds, artefato sem marketplace, Core baixando artefato antigo), todos pegos.
 
+## Erro encontrado depois da entrega (corrigido)
+6. **Instalação parcial derrubava a montagem** (`stage_pages_v421.py`): com scripts V9.4 e `core-imobiliario.yml` antigo, o Marketplace nascia no job 2 mas não era repassado, e a montagem falhava com `Arquivo obrigatorio ausente`. Eu tinha removido o fallback da V9.3. Correção: a rotina única virou `feeds_v94.py`; a montagem a chama só quando o Marketplace não chegou. Teste novo reproduz o Core antigo; a falha continua se o catálogo não permitir gerar.
+
 ## Não corrigido (de propósito)
 - Testes legados V4.1.x já quebrados na V9.3.
 - Catálogo sem imóvel elegível bloqueia o deploy. `shortcut: Meta vazio não é publicado, mudar se for preciso retirar tudo de uma vez.`

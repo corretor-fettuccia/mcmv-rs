@@ -301,11 +301,22 @@ class StagingConfereOsFeeds(unittest.TestCase):
             self.assertTrue((self.root / '_site' / name).is_file())
             self.assertIn(f'INCLUIDO no artefato: {name}', out.getvalue())
 
-    def test_marketplace_ausente_bloqueia_sem_tocar_no_site_anterior(self):
+    def test_marketplace_ausente_workflow_antigo_e_regerado_na_montagem(self):
+        (self.root / 'marketplace-produtos.xml').unlink()  # Core antigo: só o Merchant chegou
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            stage_pages_v421.run()
+        self.assertIn('FEED META GERADO', out.getvalue())
+        self.assertEqual(len(ET.parse(self.root / '_site' / 'marketplace-produtos.xml').findall('listing')), 1)
+        self.assertEqual((self.root / '_site' / 'merchant-produtos.xml').read_bytes(), self.google)  # Merchant idêntico
+
+    def test_marketplace_ausente_e_nao_gerado_bloqueia_sem_tocar_no_site_anterior(self):
         (self.root / 'marketplace-produtos.xml').unlink()
+        doc = fixture(); doc['items'][0]['marketplaceEnabled'] = False  # nenhum imóvel elegível
+        (self.root / 'catalogo.json').write_text(json.dumps(doc), encoding='utf-8')
         (self.root / '_site').mkdir()
         (self.root / '_site' / 'index.html').write_text('versao anterior', encoding='utf-8')
-        with self.assertRaisesRegex(RuntimeError, 'ausente: marketplace-produtos.xml'):
+        with self.assertRaisesRegex(RuntimeError, 'Nao foi possivel gerar Marketplace'):
             stage_pages_v421.run()
         self.assertEqual((self.root / '_site' / 'index.html').read_text(encoding='utf-8'), 'versao anterior')
 

@@ -3,7 +3,8 @@
 ## O que mudou em relação à V9.3
 
 - **Um motor, dois feeds.** `scripts/make-feed-merchantcenter.py` (job 2/7) gera `merchant-produtos.xml` e `marketplace-produtos.xml` do mesmo `catalogo.json`. Se o Marketplace falhar, **nenhum** feed é gravado e a publicação não acontece.
-- **Sem workflow Meta separado.** `gerar-marketplace.yml` saiu do pacote. A montagem do Pages só **confere** os feeds e falha se faltarem.
+- **Sem workflow Meta separado.** `gerar-marketplace.yml` saiu do pacote. A rotina única fica em `scripts/feeds_v94.py`.
+- **Rede de segurança na montagem.** Se o `core-imobiliario.yml` instalado for antigo (só repassa o Merchant) e o `marketplace-produtos.xml` não chegar, a montagem o regera com a **mesma rotina** a partir do catálogo da execução (log `FEED META GERADO na montagem (fallback)`). Se não for possível gerar, falha antes de tocar em `_site`. Mesmo assim, instale o `.github/` V9.4: sem ele não há validação do contrato, verificação pública nem gate de testes.
 - **Sitemap com imagens** (`<image:image>`), página principal, imóveis ativos, sem repetição.
 - **Contrato validado** por `scripts/validate_xml_v94.py` no motor 02, no motor 03, antes da montagem e no `_site` final. Veja `MD/CONTRATO-FEEDS-V9.4.md`.
 - **Verificação pública** depois do deploy (job `verificar_publicacao`).
@@ -17,7 +18,7 @@
 ## Instalação
 
 1. Descompacte `MCMV-RS-V9.4-GITHUB-RAIZ.zip` e envie o **conteúdo** para a raiz do repositório (branch `main`). Não envie o ZIP como arquivo nem crie subpasta.
-2. **Preserve a pasta oculta `.github/`.** Sem ela o Core antigo roda e a publicação falha de propósito (`Arquivo obrigatorio ausente: marketplace-produtos.xml`).
+2. **Preserve a pasta oculta `.github/`.** Sem ela o Core antigo roda: os feeds saem pelo fallback da montagem, mas sem validação do contrato, sem testes no portão e sem verificação pública.
 3. Opcional: apague `.github/workflows/gerar-marketplace.yml` do repositório (legado V9.3; as auditorias o toleram).
 4. Não envie `catalogo.json` de exemplo. Mantenha a variável `VITRINE_API_URL`.
 5. Actions → **Core Imobiliario - Sincronizar e Publicar** → Run workflow (o push em `.github/workflows/**` também dispara).
