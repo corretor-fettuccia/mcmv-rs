@@ -340,7 +340,8 @@ html{scroll-padding-top:92px}body{font-family:system-ui,-apple-system,"Segoe UI"
    Sem o script, a página volta ao layout anterior (tudo aberto).
    Para reverter: apague este <style> e o script "busca-abas-js".
    Estrutura: abas (Renda | Localização) > conteúdo da aba > filtros.
-   Filtros GLOBAIS (as duas abas): Situação e Características (recolhível).
+   Filtros GLOBAIS (as duas abas): Situação, Tamanho e Características (recolhível).
+   Tamanho = características que começam com "Privativo" ou "Área" e têm m² (ex.: "Privativo 40m² a 49m²").
    Filtros EXCLUSIVOS da aba Localização: busca + Região, Cidade e Bairro (recolhível).
    Índice: 1) Painel de filtros  2) Abas Renda | Localização
    ========================================================================== */
@@ -350,13 +351,16 @@ html{scroll-padding-top:92px}body{font-family:system-ui,-apple-system,"Segoe UI"
 #busca #filterTitle,#busca label[for=search]{position:absolute!important;width:1px;height:1px;margin:0!important;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 
 /* Grade (filhos: 1 Região · 2 Busca · 3 Cidade · 4 Bairro · 5 Situação · 6 botões)
-   Linha 1: [Busca .........][Situação][Região e cidade ▾][Características ▾]
+   Linha 1: [Busca .........][Situação][Tamanho][Região e cidade ▾][Características ▾]
    Linha 2 (recolhível, só Localização): [Região][Cidade][Bairro]                */
-#busca .filtergrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) auto!important;gap:10px!important;align-items:end}
+#busca .filtergrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr)) auto!important;gap:10px!important;align-items:end}
 #busca .filtergrid>div{order:0!important;min-width:0}
 #busca .filtergrid>div:nth-child(2){grid-column:1/3!important;grid-row:1!important}
 #busca .filtergrid>div:nth-child(5){grid-column:3!important;grid-row:1!important}
-#busca .filtergrid>.mcmvToggles{grid-column:4;grid-row:1}
+#busca .filtergrid>.mcmvSizeField{grid-column:4!important;grid-row:1!important}
+#busca .filtergrid>.mcmvToggles{grid-column:5!important;grid-row:1!important}
+/* Faixas de tamanho saem das pílulas e vão para o seletor "Tamanho" */
+#busca #attributeFilters .mcmvSizeChoice{display:none!important}
 #busca .filtergrid>div:nth-child(1){grid-column:1!important;grid-row:2!important}
 #busca .filtergrid>div:nth-child(3){grid-column:2!important;grid-row:2!important}
 #busca .filtergrid>div:nth-child(4){grid-column:3!important;grid-row:2!important}
@@ -431,14 +435,15 @@ html{scroll-padding-top:92px}body{font-family:system-ui,-apple-system,"Segoe UI"
 
 /* Tablet e celular */
 @media(max-width:700px){
-  /* [Busca ............] / [Situação][Local][Extras] / [Região][Cidade] / [Bairro] */
+  /* [Busca ............] / [Situação][Tamanho] / [Local][Extras] / [Região][Cidade] / [Bairro] */
   #busca .filtergrid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
   #busca .filtergrid>div:nth-child(2){grid-column:1/-1!important;grid-row:1!important}
   #busca .filtergrid>div:nth-child(5){grid-column:1!important;grid-row:2!important}
-  #busca .filtergrid>.mcmvToggles{grid-column:2;grid-row:2}
-  #busca .filtergrid>div:nth-child(1){grid-column:1!important;grid-row:3!important}
-  #busca .filtergrid>div:nth-child(3){grid-column:2!important;grid-row:3!important}
-  #busca .filtergrid>div:nth-child(4){grid-column:1/-1!important;grid-row:4!important}
+  #busca .filtergrid>.mcmvSizeField{grid-column:2!important;grid-row:2!important}
+  #busca .filtergrid>.mcmvToggles{grid-column:1/-1!important;grid-row:3!important}
+  #busca .filtergrid>div:nth-child(1){grid-column:1!important;grid-row:4!important}
+  #busca .filtergrid>div:nth-child(3){grid-column:2!important;grid-row:4!important}
+  #busca .filtergrid>div:nth-child(4){grid-column:1/-1!important;grid-row:5!important}
   #busca .mcmvToggles .mcmvFilterToggle{flex:1 1 0;min-width:0;padding:0 8px;gap:5px}
   #busca .mcmvFilterToggle .mcmvChevron{display:none}
   #busca .lblLong{display:none}#busca .lblShort{display:inline}
@@ -502,12 +507,14 @@ html{scroll-padding-top:92px}body{font-family:system-ui,-apple-system,"Segoe UI"
 #simulator[data-mode=income]+#busca .filtergrid>div:nth-child(3),
 #simulator[data-mode=income]+#busca .filtergrid>div:nth-child(4),
 #simulator[data-mode=income]+#busca .mcmvLoc{display:none!important}
-#simulator[data-mode=income]+#busca .filtergrid{grid-template-columns:minmax(180px,280px) auto minmax(0,1fr)!important;margin-top:10px;padding-top:10px;border-top:1px dashed #d6e2e0}
+#simulator[data-mode=income]+#busca .filtergrid{grid-template-columns:minmax(170px,250px) minmax(170px,250px) auto minmax(0,1fr)!important;margin-top:10px;padding-top:10px;border-top:1px dashed #d6e2e0}
 #simulator[data-mode=income]+#busca .filtergrid>div:nth-child(5){grid-column:1!important;grid-row:1!important}
-#simulator[data-mode=income]+#busca .filtergrid>.mcmvToggles{grid-column:2;grid-row:1}
+#simulator[data-mode=income]+#busca .filtergrid>.mcmvSizeField{grid-column:2!important;grid-row:1!important}
+#simulator[data-mode=income]+#busca .filtergrid>.mcmvToggles{grid-column:3!important;grid-row:1!important}
 @media(max-width:700px){
   #simulator[data-mode=income]+#busca .filtergrid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
-  #simulator[data-mode=income]+#busca .filtergrid>.mcmvToggles{grid-column:2}
+  #simulator[data-mode=income]+#busca .filtergrid>.mcmvSizeField{grid-column:2!important;grid-row:1!important}
+  #simulator[data-mode=income]+#busca .filtergrid>.mcmvToggles{grid-column:1/-1!important;grid-row:2!important}
 }
 #simulator[data-mode] .tabShort{display:none}
 #simulator[data-mode]+#busca.filters{padding-left:14px;padding-right:14px}
@@ -597,6 +604,7 @@ html{scroll-padding-top:92px}body{font-family:system-ui,-apple-system,"Segoe UI"
       if(place&&!isOpen('loc')){var o=s.options[s.selectedIndex];pill(o?o.text:s.value,function(){s.value='';fire(s)})}
     });
     panel.querySelectorAll('#attributeFilters input[type=checkbox]:checked').forEach(function(cb){
+      if(cb.closest('.mcmvSizeChoice')) return;
       nAttr++;
       if(!isOpen('attr')){
         var l=cb.closest('label'),t=l?l.textContent:'',c=l&&l.querySelector('.attributeCount');
@@ -619,6 +627,54 @@ html{scroll-padding-top:92px}body{font-family:system-ui,-apple-system,"Segoe UI"
   if(sim&&window.MutationObserver) new MutationObserver(refresh).observe(sim,{attributes:true,attributeFilter:['data-mode']});
   ['loc','attr'].forEach(function(g){var v=null;try{v=localStorage.getItem(groups[g].key)}catch(e){}setOpen(g,v==='1',false)});
   requestAnimationFrame(function(){panel.classList.add('is-ready')});
+})();
+/* 3) Seletor "Tamanho" (global). Lê as características "Privativo ..m²" ou "Área ..m²" que o app.js lista
+      e, ao escolher uma faixa, marca/desmarca as MESMAS caixinhas de antes: o app.js filtra como sempre. */
+(function(){
+  var panel=document.getElementById('busca'), grid=panel&&panel.querySelector('.filtergrid'), list=document.getElementById('attributeFilters');
+  if(!grid||!list) return;
+  var RX=/^\s*(privativ|[áa]rea)/i, M2=/\d+(?:[.,]\d+)?\s*m(?:²|2)/i;
+  var field=document.createElement('div'); field.className='mcmvSizeField'; field.hidden=true;
+  field.innerHTML='<label for="mcmvSize">Tamanho</label><select id="mcmvSize"><option value="">Todos</option></select>';
+  grid.appendChild(field);
+  var sel=field.querySelector('select'), busy=false, sig='';
+  function txt(l){var t=l.textContent,c=l.querySelector('.attributeCount');if(c)t=t.replace(c.textContent,'');return t.replace(/\s+/g,' ').trim()}
+  function sizes(){
+    var out=[];
+    list.querySelectorAll('label').forEach(function(l){
+      var cb=l.querySelector('input[type=checkbox]'); if(!cb) return;
+      var t=txt(l); if(!(RX.test(t)&&M2.test(t))) return;
+      l.classList.add('mcmvSizeChoice');
+      var c=l.querySelector('.attributeCount');
+      out.push({key:t,cb:cb,count:c?c.textContent.trim():'',n:parseFloat((t.match(/\d+(?:[.,]\d+)?/)||['0'])[0].replace(',','.'))});
+    });
+    return out.sort(function(a,b){return a.n-b.n||a.key.localeCompare(b.key,'pt-BR')});
+  }
+  function build(){
+    if(busy) return;
+    var s=sizes(); field.hidden=!s.length;
+    var now=s.map(function(x){return x.key+'|'+x.count}).join(';');
+    if(now!==sig){
+      sig=now; sel.length=1;
+      var seen={};s.forEach(function(x){x.label=x.key.replace(/^\s*(privativ\w*|[áa]rea\w*)\s*/i,'')||x.key;seen[x.label]=(seen[x.label]||0)+1});
+      s.forEach(function(x){if(seen[x.label]>1)x.label=x.key}); /* mesma faixa em "Privativo" e "Área": mostra o texto completo */
+      s.forEach(function(x){var o=document.createElement('option');o.value=x.key;o.textContent=x.label+(x.count?' ('+x.count+')':'');sel.appendChild(o)});
+    }
+    var on=s.filter(function(x){return x.cb.checked})[0];
+    sel.value=on?on.key:'';
+  }
+  sel.addEventListener('change',function(){
+    var want=sel.value; busy=true;
+    for(var i=0;i<30;i++){ /* uma caixinha por vez: o app.js pode redesenhar a lista a cada clique */
+      var m=sizes().filter(function(x){return x.cb.checked!==(x.key===want)})[0];
+      if(!m) break; m.cb.click();
+    }
+    busy=false; build();
+  });
+  if(window.MutationObserver) new MutationObserver(function(){build()}).observe(list,{childList:true,subtree:true});
+  list.addEventListener('change',function(){setTimeout(build,0)});
+  document.addEventListener('click',function(){setTimeout(build,60)});
+  build();
 })();
 /* 2) Abas Renda | Localização (os botões #modeIncome/#modePlace seguem chamando o app.js) */
 (function(){
