@@ -339,8 +339,10 @@ html{scroll-padding-top:92px}body{font-family:system-ui,-apple-system,"Segoe UI"
    Não altera app.js, config.js, IDs nem a estrutura usada pelo motor.
    Sem o script, a página volta ao layout anterior (tudo aberto).
    Para reverter: apague este <style> e o script "busca-abas-js".
-   Estrutura: abas (Renda | Localização) > conteúdo da aba > filtros.
-   Filtros GLOBAIS (as duas abas): Situação, Tamanho e Características (recolhível).
+   Estrutura: abas (Renda | Localização | Valor) > conteúdo da aba > filtros.
+   Aba Valor: filtra pelo valor mínimo ("minimum") lido de ./catalogo.json; não altera o app.js.
+   Filtros GLOBAIS (as duas abas): Situação, Dormitórios, Tamanho e Características (recolhível).
+   Dormitórios = características "NN Dormitórios" (ex.: "02 Dormitórios").
    Tamanho = características que começam com "Privativo" ou "Área" e têm m² (ex.: "Privativo 40m² a 49m²").
    Filtros EXCLUSIVOS da aba Localização: busca + Região, Cidade e Bairro (recolhível).
    Índice: 1) Painel de filtros  2) Abas Renda | Localização
@@ -350,20 +352,22 @@ html{scroll-padding-top:92px}body{font-family:system-ui,-apple-system,"Segoe UI"
 #busca.filters{position:relative;background:#fff;border:1px solid #dde7e5;border-radius:14px;padding:14px 16px 12px;box-shadow:0 6px 22px rgba(19,50,71,.05)}
 #busca #filterTitle,#busca label[for=search]{position:absolute!important;width:1px;height:1px;margin:0!important;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 
-/* Grade (filhos: 1 Região · 2 Busca · 3 Cidade · 4 Bairro · 5 Situação · 6 botões)
-   Linha 1: [Busca .........][Situação][Tamanho][Região e cidade ▾][Características ▾]
-   Linha 2 (recolhível, só Localização): [Região][Cidade][Bairro]                */
-#busca .filtergrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr)) auto!important;gap:10px!important;align-items:end}
+/* Grade (filhos: 1 Região · 2 Busca · 3 Cidade · 4 Bairro · 5 Situação · botões · Dormitórios · Tamanho)
+   Linha 1: [Busca ........................][Região e cidade ▾][Características ▾]
+   Linha 2 (global): [Situação][Dormitórios][Tamanho]
+   Linha 3 (recolhível, só Localização): [Região][Cidade][Bairro]               */
+#busca .filtergrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) auto!important;gap:10px!important;align-items:end}
 #busca .filtergrid>div{order:0!important;min-width:0}
-#busca .filtergrid>div:nth-child(2){grid-column:1/3!important;grid-row:1!important}
-#busca .filtergrid>div:nth-child(5){grid-column:3!important;grid-row:1!important}
-#busca .filtergrid>.mcmvSizeField{grid-column:4!important;grid-row:1!important}
-#busca .filtergrid>.mcmvToggles{grid-column:5!important;grid-row:1!important}
-/* Faixas de tamanho saem das pílulas e vão para o seletor "Tamanho" */
-#busca #attributeFilters .mcmvSizeChoice{display:none!important}
-#busca .filtergrid>div:nth-child(1){grid-column:1!important;grid-row:2!important}
-#busca .filtergrid>div:nth-child(3){grid-column:2!important;grid-row:2!important}
-#busca .filtergrid>div:nth-child(4){grid-column:3!important;grid-row:2!important}
+#busca .filtergrid>div:nth-child(2){grid-column:1/4!important;grid-row:1!important}
+#busca .filtergrid>.mcmvToggles{grid-column:4!important;grid-row:1!important}
+#busca .filtergrid>div:nth-child(5){grid-column:1!important;grid-row:2!important}
+#busca .filtergrid>.mcmvDormField{grid-column:2!important;grid-row:2!important}
+#busca .filtergrid>.mcmvSizeField{grid-column:3!important;grid-row:2!important}
+/* Dormitórios e faixas de tamanho saem das pílulas e vão para os seletores */
+#busca #attributeFilters .mcmvPicked{display:none!important}
+#busca .filtergrid>div:nth-child(1){grid-column:1!important;grid-row:3!important}
+#busca .filtergrid>div:nth-child(3){grid-column:2!important;grid-row:3!important}
+#busca .filtergrid>div:nth-child(4){grid-column:3!important;grid-row:3!important}
 #busca .mcmvToggles{display:flex;gap:8px}
 #busca .filtergrid label{font-size:10.5px;font-weight:800;letter-spacing:.35px;text-transform:uppercase;color:#5b7080;margin:0 0 4px}
 
@@ -435,16 +439,18 @@ html{scroll-padding-top:92px}body{font-family:system-ui,-apple-system,"Segoe UI"
 
 /* Tablet e celular */
 @media(max-width:700px){
-  /* [Busca ............] / [Situação][Tamanho] / [Local][Extras] / [Região][Cidade] / [Bairro] */
+  /* [Busca ............] / [Situação][Dormitórios] / [Tamanho][Local|Extras] / [Região][Cidade] / [Bairro] */
   #busca .filtergrid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
   #busca .filtergrid>div:nth-child(2){grid-column:1/-1!important;grid-row:1!important}
   #busca .filtergrid>div:nth-child(5){grid-column:1!important;grid-row:2!important}
-  #busca .filtergrid>.mcmvSizeField{grid-column:2!important;grid-row:2!important}
-  #busca .filtergrid>.mcmvToggles{grid-column:1/-1!important;grid-row:3!important}
+  #busca .filtergrid>.mcmvDormField{grid-column:2!important;grid-row:2!important}
+  #busca .filtergrid>.mcmvSizeField{grid-column:1!important;grid-row:3!important}
+  #busca .filtergrid>.mcmvToggles{grid-column:2!important;grid-row:3!important;align-self:end}
+  #busca .mcmvToggles{gap:6px}
   #busca .filtergrid>div:nth-child(1){grid-column:1!important;grid-row:4!important}
   #busca .filtergrid>div:nth-child(3){grid-column:2!important;grid-row:4!important}
   #busca .filtergrid>div:nth-child(4){grid-column:1/-1!important;grid-row:5!important}
-  #busca .mcmvToggles .mcmvFilterToggle{flex:1 1 0;min-width:0;padding:0 8px;gap:5px}
+  #busca .mcmvToggles .mcmvFilterToggle{flex:1 1 0;min-width:0;padding:0 6px;gap:4px}
   #busca .mcmvFilterToggle .mcmvChevron{display:none}
   #busca .lblLong{display:none}#busca .lblShort{display:inline}
   #busca .mcmvFilterToggle .mcmvBadge{position:absolute;top:-7px;right:-5px;min-width:18px;height:18px;font-size:10px;padding:0 5px;box-shadow:0 0 0 2px #fff}
@@ -500,21 +506,23 @@ html{scroll-padding-top:92px}body{font-family:system-ui,-apple-system,"Segoe UI"
 #simulator[data-mode]{margin-bottom:0;border-bottom:0;border-radius:14px 14px 0 0;padding-bottom:4px;box-shadow:none}
 #simulator[data-mode]+#busca.filters{margin-top:0;border-top:0;border-radius:0 0 14px 14px;padding-top:10px;margin-bottom:22px}
 #simulator[data-mode]+#busca.filters,#simulator[data-mode]+#busca.filters{box-shadow:0 14px 22px -14px rgba(19,50,71,.14)}
-/* Aba RENDA: mostra só os filtros GLOBAIS (Situação + Características);
+/* Aba RENDA: mostra só os filtros GLOBAIS (Situação, Dormitórios, Tamanho, Características);
    busca, Região, Cidade, Bairro e o botão "Região e cidade" são exclusivos da aba Localização */
-#simulator[data-mode=income]+#busca .filtergrid>div:nth-child(1),
-#simulator[data-mode=income]+#busca .filtergrid>div:nth-child(2),
-#simulator[data-mode=income]+#busca .filtergrid>div:nth-child(3),
-#simulator[data-mode=income]+#busca .filtergrid>div:nth-child(4),
-#simulator[data-mode=income]+#busca .mcmvLoc{display:none!important}
-#simulator[data-mode=income]+#busca .filtergrid{grid-template-columns:minmax(170px,250px) minmax(170px,250px) auto minmax(0,1fr)!important;margin-top:10px;padding-top:10px;border-top:1px dashed #d6e2e0}
-#simulator[data-mode=income]+#busca .filtergrid>div:nth-child(5){grid-column:1!important;grid-row:1!important}
-#simulator[data-mode=income]+#busca .filtergrid>.mcmvSizeField{grid-column:2!important;grid-row:1!important}
-#simulator[data-mode=income]+#busca .filtergrid>.mcmvToggles{grid-column:3!important;grid-row:1!important}
+#simulator[data-mode=income]+#busca .filtergrid>div:nth-child(1),#simulator[data-mode=value]+#busca .filtergrid>div:nth-child(1),
+#simulator[data-mode=income]+#busca .filtergrid>div:nth-child(2),#simulator[data-mode=value]+#busca .filtergrid>div:nth-child(2),
+#simulator[data-mode=income]+#busca .filtergrid>div:nth-child(3),#simulator[data-mode=value]+#busca .filtergrid>div:nth-child(3),
+#simulator[data-mode=income]+#busca .filtergrid>div:nth-child(4),#simulator[data-mode=value]+#busca .filtergrid>div:nth-child(4),
+#simulator[data-mode=income]+#busca .mcmvLoc,#simulator[data-mode=value]+#busca .mcmvLoc{display:none!important}
+#simulator[data-mode=income]+#busca .filtergrid,#simulator[data-mode=value]+#busca .filtergrid{grid-template-columns:repeat(3,minmax(150px,230px)) auto minmax(0,1fr)!important;margin-top:10px;padding-top:10px;border-top:1px dashed #d6e2e0}
+#simulator[data-mode=income]+#busca .filtergrid>div:nth-child(5),#simulator[data-mode=value]+#busca .filtergrid>div:nth-child(5){grid-column:1!important;grid-row:1!important}
+#simulator[data-mode=income]+#busca .filtergrid>.mcmvDormField,#simulator[data-mode=value]+#busca .filtergrid>.mcmvDormField{grid-column:2!important;grid-row:1!important}
+#simulator[data-mode=income]+#busca .filtergrid>.mcmvSizeField,#simulator[data-mode=value]+#busca .filtergrid>.mcmvSizeField{grid-column:3!important;grid-row:1!important}
+#simulator[data-mode=income]+#busca .filtergrid>.mcmvToggles,#simulator[data-mode=value]+#busca .filtergrid>.mcmvToggles{grid-column:4!important;grid-row:1!important}
 @media(max-width:700px){
-  #simulator[data-mode=income]+#busca .filtergrid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
-  #simulator[data-mode=income]+#busca .filtergrid>.mcmvSizeField{grid-column:2!important;grid-row:1!important}
-  #simulator[data-mode=income]+#busca .filtergrid>.mcmvToggles{grid-column:1/-1!important;grid-row:2!important}
+  #simulator[data-mode=income]+#busca .filtergrid,  #simulator[data-mode=value]+#busca .filtergrid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  #simulator[data-mode=income]+#busca .filtergrid>.mcmvDormField,  #simulator[data-mode=value]+#busca .filtergrid>.mcmvDormField{grid-column:2!important;grid-row:1!important}
+  #simulator[data-mode=income]+#busca .filtergrid>.mcmvSizeField,  #simulator[data-mode=value]+#busca .filtergrid>.mcmvSizeField{grid-column:1!important;grid-row:2!important}
+  #simulator[data-mode=income]+#busca .filtergrid>.mcmvToggles,  #simulator[data-mode=value]+#busca .filtergrid>.mcmvToggles{grid-column:2!important;grid-row:2!important}
 }
 #simulator[data-mode] .tabShort{display:none}
 #simulator[data-mode]+#busca.filters{padding-left:14px;padding-right:14px}
@@ -534,6 +542,31 @@ html{scroll-padding-top:92px}body{font-family:system-ui,-apple-system,"Segoe UI"
 }
 @media(max-width:600px){#simulator[data-mode] .tabLong{display:none}#simulator[data-mode] .tabShort{display:inline}#simulator[data-mode]+#busca.filters{padding-left:10px;padding-right:10px}}
 @media(max-width:360px){#simulator[data-mode]>.simActions button::before{display:none}}
+
+/* ---------- 3) ABA POR VALOR (lê ./catalogo.json, campo "minimum") ---------- */
+#simulator[data-mode]>.simActions{grid-template-columns:none!important;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr)}
+#modeValue::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23087d77' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z'/%3E%3Ccircle cx='7.5' cy='7.5' r='1.5'/%3E%3C/svg%3E")!important}
+#simulator[data-mode=value] #modeValue{background:#fff!important;color:var(--teal)!important;box-shadow:0 1px 3px rgba(19,50,71,.12)}
+#mcmvValuePanel{display:none}
+#simulator[data-mode=value] #mcmvValuePanel{display:block;margin-top:12px}
+#simulator[data-mode=value] #incomePanel{display:none!important}
+.mcmvValueHead{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px;margin:0 0 6px}
+.mcmvValueHead strong{font-size:10.5px;font-weight:800;letter-spacing:.35px;text-transform:uppercase;color:#5b7080}
+.mcmvValueHead span{font-size:11.5px;color:#8a9ca6}
+.mcmvValueOptions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.mcmvValueOptions button{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:44px;padding:6px 10px;border:1.5px solid #d4e0df;border-radius:10px;background:#fff;color:var(--ink);font-size:13.5px;font-weight:750;line-height:1.2;text-align:center;transition:border-color .15s,background-color .15s,color .15s}
+.mcmvValueOptions button:hover{border-color:#9fc5c1;background:#f4faf9}
+.mcmvValueOptions button[aria-checked="true"]{border-color:var(--teal);background:var(--teal);color:#fff}
+.mcmvValueOptions button i{font-style:normal;font-size:10.5px;font-weight:800;padding:1px 6px;border-radius:999px;background:#eef3f4;color:#617c89}
+.mcmvValueOptions button[aria-checked="true"] i{background:rgba(255,255,255,.22);color:#fff}
+#tiles>.mcmvValueOut{display:none!important}
+.mcmvValueTag{color:var(--teal);font-weight:700;white-space:nowrap}
+@media(max-width:600px){
+  #simulator[data-mode=value] #mcmvValuePanel{margin-top:10px}
+  .mcmvValueOptions{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+  .mcmvValueOptions button{min-height:42px;font-size:12.5px;padding:6px 8px}
+  .mcmvValueHead span{display:none}
+}
 </style>
 </head>
 <body>
@@ -597,18 +630,18 @@ html{scroll-padding-top:92px}body{font-family:system-ui,-apple-system,"Segoe UI"
     active.appendChild(b);
   }
   function refresh(){
-    var place=!sim||sim.getAttribute('data-mode')!=='income';
+    var mode=sim&&sim.getAttribute('data-mode'), place=!mode||mode==='place';
     var nLoc=0,nAttr=0; active.innerHTML='';
     LOC.forEach(function(id){
       var s=document.getElementById(id); if(!s||!s.value) return; nLoc++;
       if(place&&!isOpen('loc')){var o=s.options[s.selectedIndex];pill(o?o.text:s.value,function(){s.value='';fire(s)})}
     });
     panel.querySelectorAll('#attributeFilters input[type=checkbox]:checked').forEach(function(cb){
-      if(cb.closest('.mcmvSizeChoice')) return;
+      if(cb.closest('.mcmvPicked')) return;
       nAttr++;
       if(!isOpen('attr')){
-        var l=cb.closest('label'),t=l?l.textContent:'',c=l&&l.querySelector('.attributeCount');
-        if(c) t=t.replace(c.textContent,'');
+        var l=cb.closest('label'),t='';
+        if(l){var k=l.cloneNode(true);k.querySelectorAll('.attributeCount,input').forEach(function(e){e.remove()});t=k.textContent.replace(/\s+/g,' ')}
         pill(t.trim()||'Característica',function(){cb.click()});
       }
     });
@@ -628,53 +661,61 @@ html{scroll-padding-top:92px}body{font-family:system-ui,-apple-system,"Segoe UI"
   ['loc','attr'].forEach(function(g){var v=null;try{v=localStorage.getItem(groups[g].key)}catch(e){}setOpen(g,v==='1',false)});
   requestAnimationFrame(function(){panel.classList.add('is-ready')});
 })();
-/* 3) Seletor "Tamanho" (global). Lê as características "Privativo ..m²" ou "Área ..m²" que o app.js lista
-      e, ao escolher uma faixa, marca/desmarca as MESMAS caixinhas de antes: o app.js filtra como sempre. */
+/* 3) Seletores globais "Dormitórios" e "Tamanho". Leem as características que o app.js lista
+      ("02 Dormitórios", "Privativo 40m² a 49m²", "Área ...m²") e, ao escolher uma opção,
+      marcam/desmarcam as MESMAS caixinhas de antes: o app.js filtra como sempre. */
 (function(){
   var panel=document.getElementById('busca'), grid=panel&&panel.querySelector('.filtergrid'), list=document.getElementById('attributeFilters');
   if(!grid||!list) return;
-  var RX=/^\s*(privativ|[áa]rea)/i, M2=/\d+(?:[.,]\d+)?\s*m(?:²|2)/i;
-  var field=document.createElement('div'); field.className='mcmvSizeField'; field.hidden=true;
-  field.innerHTML='<label for="mcmvSize">Tamanho</label><select id="mcmvSize"><option value="">Todos</option></select>';
-  grid.appendChild(field);
-  var sel=field.querySelector('select'), busy=false, sig='';
-  function txt(l){var t=l.textContent,c=l.querySelector('.attributeCount');if(c)t=t.replace(c.textContent,'');return t.replace(/\s+/g,' ').trim()}
-  function sizes(){
-    var out=[];
-    list.querySelectorAll('label').forEach(function(l){
-      var cb=l.querySelector('input[type=checkbox]'); if(!cb) return;
-      var t=txt(l); if(!(RX.test(t)&&M2.test(t))) return;
-      l.classList.add('mcmvSizeChoice');
-      var c=l.querySelector('.attributeCount');
-      out.push({key:t,cb:cb,count:c?c.textContent.trim():'',n:parseFloat((t.match(/\d+(?:[.,]\d+)?/)||['0'])[0].replace(',','.'))});
+  function txt(l){var k=l.cloneNode(true);k.querySelectorAll('.attributeCount,input').forEach(function(e){e.remove()});return k.textContent.replace(/\s+/g,' ').trim()}
+  function picker(cfg){
+    var field=document.createElement('div'); field.className=cfg.cls; field.hidden=true;
+    field.innerHTML='<label for="'+cfg.id+'">'+cfg.title+'</label><select id="'+cfg.id+'"><option value="">Todos</option></select>';
+    grid.appendChild(field);
+    var sel=field.querySelector('select'), busy=false, sig='';
+    function items(){
+      var out=[];
+      list.querySelectorAll('label').forEach(function(l){
+        var cb=l.querySelector('input[type=checkbox]'); if(!cb) return;
+        var t=txt(l); if(!cfg.match(t)) return;
+        l.classList.add('mcmvPicked');
+        var c=l.querySelector('.attributeCount');
+        out.push({key:t,cb:cb,count:c?c.textContent.trim():'',n:parseFloat((t.match(/\d+(?:[.,]\d+)?/)||['0'])[0].replace(',','.'))});
+      });
+      return out.sort(function(a,b){return a.n-b.n||a.key.localeCompare(b.key,'pt-BR')});
+    }
+    function build(){
+      if(busy) return;
+      var s=items(); field.hidden=!s.length;
+      var now=s.map(function(x){return x.key+'|'+x.count}).join(';');
+      if(now!==sig){
+        sig=now; sel.length=1;
+        var seen={}; s.forEach(function(x){x.label=cfg.label(x.key)||x.key;seen[x.label]=(seen[x.label]||0)+1});
+        s.forEach(function(x){if(seen[x.label]>1)x.label=x.key}); /* rótulos iguais: mostra o texto completo */
+        s.forEach(function(x){var o=document.createElement('option');o.value=x.key;o.textContent=x.label+(x.count?' ('+x.count+')':'');sel.appendChild(o)});
+      }
+      var on=s.filter(function(x){return x.cb.checked})[0];
+      sel.value=on?on.key:'';
+    }
+    sel.addEventListener('change',function(){
+      var want=sel.value; busy=true;
+      for(var i=0;i<30;i++){ /* uma caixinha por vez: o app.js pode redesenhar a lista a cada clique */
+        var m=items().filter(function(x){return x.cb.checked!==(x.key===want)})[0];
+        if(!m) break; m.cb.click();
+      }
+      busy=false; build();
     });
-    return out.sort(function(a,b){return a.n-b.n||a.key.localeCompare(b.key,'pt-BR')});
+    if(window.MutationObserver) new MutationObserver(function(){build()}).observe(list,{childList:true,subtree:true});
+    list.addEventListener('change',function(){setTimeout(build,0)});
+    document.addEventListener('click',function(){setTimeout(build,60)});
+    build();
   }
-  function build(){
-    if(busy) return;
-    var s=sizes(); field.hidden=!s.length;
-    var now=s.map(function(x){return x.key+'|'+x.count}).join(';');
-    if(now!==sig){
-      sig=now; sel.length=1;
-      var seen={};s.forEach(function(x){x.label=x.key.replace(/^\s*(privativ\w*|[áa]rea\w*)\s*/i,'')||x.key;seen[x.label]=(seen[x.label]||0)+1});
-      s.forEach(function(x){if(seen[x.label]>1)x.label=x.key}); /* mesma faixa em "Privativo" e "Área": mostra o texto completo */
-      s.forEach(function(x){var o=document.createElement('option');o.value=x.key;o.textContent=x.label+(x.count?' ('+x.count+')':'');sel.appendChild(o)});
-    }
-    var on=s.filter(function(x){return x.cb.checked})[0];
-    sel.value=on?on.key:'';
-  }
-  sel.addEventListener('change',function(){
-    var want=sel.value; busy=true;
-    for(var i=0;i<30;i++){ /* uma caixinha por vez: o app.js pode redesenhar a lista a cada clique */
-      var m=sizes().filter(function(x){return x.cb.checked!==(x.key===want)})[0];
-      if(!m) break; m.cb.click();
-    }
-    busy=false; build();
-  });
-  if(window.MutationObserver) new MutationObserver(function(){build()}).observe(list,{childList:true,subtree:true});
-  list.addEventListener('change',function(){setTimeout(build,0)});
-  document.addEventListener('click',function(){setTimeout(build,60)});
-  build();
+  picker({id:'mcmvDorm',cls:'mcmvDormField',title:'Dormitórios',
+    match:function(t){return /^\s*\d+\s*(dormit|quarto)/i.test(t)},
+    label:function(k){return k.replace(/^\s*0*(\d+)\s*/,'$1 ').replace(/\s+\S/,function(c){return c.toLowerCase()})}});
+  picker({id:'mcmvSize',cls:'mcmvSizeField',title:'Tamanho',
+    match:function(t){return /^\s*(privativ|[áa]rea)/i.test(t)&&/\d+(?:[.,]\d+)?\s*m(?:²|2)/i.test(t)},
+    label:function(k){return k.replace(/^\s*(privativ\w*|[áa]rea\w*)\s*/i,'')}});
 })();
 /* 2) Abas Renda | Localização (os botões #modeIncome/#modePlace seguem chamando o app.js) */
 (function(){
@@ -701,6 +742,113 @@ html{scroll-padding-top:92px}body{font-family:system-ui,-apple-system,"Segoe UI"
   var saved=null; try{saved=localStorage.getItem(KEY)}catch(e){}
   setMode('income',false);
   if(saved==='place') bp.click();
+})();
+/* 4) Aba "Por valor". Lê ./catalogo.json (campo "minimum" = valor inicial do empreendimento),
+      esconde da vitrine os cartões fora da faixa escolhida e ajusta o contador.
+      Não altera o app.js: só esconde/mostra os cartões que ele já desenhou.
+      Para mudar as faixas, edite a lista FAIXAS abaixo. */
+(function(){
+  var CATALOGO='./catalogo.json';
+  var FAIXAS=[
+    {id:'ate300', nome:'Até R$ 300 mil',      curto:'até R$ 300 mil',      de:0,      ate:300000},
+    {id:'300a500',nome:'R$ 300 a 500 mil',    curto:'R$ 300 a 500 mil',    de:300000, ate:500000},
+    {id:'500mais',nome:'Acima de R$ 500 mil', curto:'acima de R$ 500 mil', de:500000, ate:Infinity}
+  ];
+  var sim=document.getElementById('simulator'),bi=document.getElementById('modeIncome'),bp=document.getElementById('modePlace'),
+      tiles=document.getElementById('tiles'),count=document.getElementById('resultsCount');
+  if(!sim||!bi||!bp||!tiles||!window.fetch) return;
+
+  /* Aba (só aparece depois que o catálogo carrega) */
+  var bv=document.createElement('button'); bv.type='button'; bv.id='modeValue'; bv.hidden=true;
+  bv.setAttribute('role','tab'); bv.setAttribute('aria-selected','false');
+  bv.innerHTML='<span class="tabLong">Buscar por valor</span><span class="tabShort">Valor</span>';
+  bp.parentNode.appendChild(bv);
+  var panel=document.createElement('div'); panel.id='mcmvValuePanel';
+  panel.innerHTML='<div class="mcmvValueHead"><strong>Valor do imóvel</strong><span>pelo valor inicial (a partir de) de cada empreendimento</span></div><div class="mcmvValueOptions" role="radiogroup" aria-label="Faixa de valor"></div>';
+  sim.appendChild(panel);
+  var opts=panel.querySelector('.mcmvValueOptions');
+
+  var KEY='mcmvValueRange', range='', items=[], byUrl={}, byId={}, byName={}, orig=null, written=null;
+  try{range=localStorage.getItem(KEY)||''}catch(e){}
+  function nu(u){return String(u||'').toLowerCase().replace(/^https?:\/\//,'').replace(/^www\./,'').replace(/[?#].*$/,'').replace(/\/+$/,'').trim()}
+  function nt(t){return String(t||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,' ').trim()}
+  function faixa(){for(var i=0;i<FAIXAS.length;i++)if(FAIXAS[i].id===range)return FAIXAS[i];return null}
+  function dentro(it,f){var v=Number(it.minimum);return v>0&&v>f.de&&v<=f.ate}
+  function on(){return sim.getAttribute('data-mode')==='value'&&!!faixa()}
+
+  function achar(card){ /* liga o cartão ao imóvel do catálogo: link > id > nome */
+    var as=card.matches('a[href]')?[card]:[]; as=as.concat([].slice.call(card.querySelectorAll('a[href]')));
+    for(var i=0;i<as.length;i++){var h=nu(as[i].getAttribute('href')); if(byUrl[h]) return byUrl[h]; try{h=nu(new URL(as[i].getAttribute('href'),location.href).href);if(byUrl[h])return byUrl[h]}catch(e){}}
+    var ds=[card].concat([].slice.call(card.querySelectorAll('*')));
+    for(i=0;i<ds.length;i++){var d=ds[i].dataset;for(var k in d){if(byId[d[k]])return byId[d[k]]}}
+    var h3=card.querySelector('h3,h2'); if(h3){var t=nt(h3.textContent); if(byName[t]) return byName[t];
+      for(i=0;i<items.length;i++){var n=nt(items[i].name); if(t&&(n.indexOf(t)===0||t.indexOf(nt(items[i].name.split('|')[0]))===0)) return items[i]}}
+    return null;
+  }
+  function aplicar(){
+    var f=on()?faixa():null, total=0, shown=0;
+    if(count&&written!==null&&count.innerHTML!==written) orig=null; /* o app.js atualizou o contador desde a última vez */
+    [].forEach.call(tiles.children,function(c){
+      if(c.id==='mcmvValueEmpty'||!c.querySelector('a,h3,h2')) return;
+      total++;
+      var it=f?achar(c):null, fora=!!(f&&it&&!dentro(it,f));
+      c.classList.toggle('mcmvValueOut',fora); if(!fora) shown++;
+    });
+    var em=document.getElementById('mcmvValueEmpty');
+    if(f&&total&&!shown){ if(!em){em=document.createElement('div');em.id='mcmvValueEmpty';em.className='empty';em.textContent='Nenhum empreendimento '+f.curto+' com os filtros atuais.';tiles.appendChild(em)} }
+    else if(em) em.remove();
+    if(count){
+      if(f&&total){ if(orig===null) orig=count.innerHTML;
+        written='<strong>'+shown+'</strong> '+(shown===1?'empreendimento encontrado':'empreendimentos encontrados')+' <span class="mcmvValueTag">· '+f.curto+'</span>';
+        if(count.innerHTML!==written) count.innerHTML=written; written=count.innerHTML; }
+      else if(orig!==null){ count.innerHTML=orig; orig=null; written=null; }
+    }
+    obsT.takeRecords(); obsC.takeRecords(); /* ignora as mudanças feitas aqui */
+  }
+  function opcoes(){
+    var lista=[{id:'',nome:'Todos',n:items.length}].concat(FAIXAS.map(function(f){return{id:f.id,nome:f.nome,n:items.filter(function(it){return dentro(it,f)}).length}}));
+    opts.innerHTML='';
+    lista.forEach(function(o){
+      var b=document.createElement('button'); b.type='button'; b.setAttribute('role','radio');
+      b.setAttribute('aria-checked',o.id===range?'true':'false');
+      b.innerHTML='<span></span><i></i>'; b.firstChild.textContent=o.nome; b.lastChild.textContent=o.n;
+      b.addEventListener('click',function(){range=o.id;try{localStorage.setItem(KEY,range)}catch(e){};opcoes();aplicar()});
+      opts.appendChild(b);
+    });
+  }
+  function irValor(){
+    bp.click(); /* app.js entra no modo de busca normal (sem o filtro de renda) */
+    sim.setAttribute('data-mode','value');
+    try{localStorage.setItem('mcmvSearchTab','value')}catch(e){}
+  }
+  function abas(){
+    var m=sim.getAttribute('data-mode');
+    bv.setAttribute('aria-selected',m==='value'?'true':'false');
+    if(m==='value'){bi.setAttribute('aria-selected','false');bp.setAttribute('aria-selected','false')}
+    aplicar();
+  }
+  var obsT=new MutationObserver(function(){aplicar()}), obsC=new MutationObserver(function(){
+    if(count.innerHTML!==written){orig=null;aplicar()} /* o app.js reescreveu o contador */
+  });
+  obsT.observe(tiles,{childList:true});
+  if(count) obsC.observe(count,{childList:true,subtree:true,characterData:true});
+  new MutationObserver(abas).observe(sim,{attributes:true,attributeFilter:['data-mode']});
+  bv.addEventListener('click',irValor);
+
+  fetch(CATALOGO,{cache:'no-cache'}).then(function(r){if(!r.ok)throw r.status;return r.json()}).then(function(d){
+    var src=(d&&(d.items||d.empreendimentos))||[];
+    items=src.map(function(x){return{id:x.id,name:x.name||x.nome||'',url:x.url||x.url_empreendimento,pageUrl:x.pageUrl||x.url_detalhes,
+      minimum:x.minimum!=null?x.minimum:x.valor_minimo}});
+    items.forEach(function(it){
+      [it.url,it.pageUrl].forEach(function(u){if(u)byUrl[nu(u)]=it});
+      if(it.id) byId[it.id]=it;
+      if(it.name){byName[nt(it.name)]=it;byName[nt(it.name.split('|')[0])]=it}
+    });
+    if(!items.length) return;
+    bv.hidden=false; opcoes();
+    var t=null; try{t=localStorage.getItem('mcmvSearchTab')}catch(e){}
+    if(t==='value') irValor(); else aplicar();
+  }).catch(function(){ /* sem catálogo: a aba Valor simplesmente não aparece */ });
 })();
 </script>
 </body>
